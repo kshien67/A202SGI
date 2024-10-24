@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">Recipe Saver</string>
+
+    <string-array name="cuisine_array">
+        <item>Chinese</item>
+        <item>Japanese</item>
+        <item>Italy</item>
+        <item>Korean</item>
+        <!-- Add more if needed -->
+    </string-array>
+
+    <string-array name="difficulty_array">
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>
+    </string-array>
 </resources>
