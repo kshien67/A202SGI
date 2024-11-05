@@ -8,7 +8,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import recipe_saver.inti.myapplication.database.DatabaseHelper;
+import recipe_saver.inti.myapplication.DatabaseHelper;
 
 public class AddRecipeActivity extends AppCompatActivity {
 
@@ -34,16 +34,18 @@ public class AddRecipeActivity extends AppCompatActivity {
         timeSeekBar = findViewById(R.id.time_needed_slider);
         servingsSeekBar = findViewById(R.id.servings_slider);
         caloriesSeekBar = findViewById(R.id.calories_slider);
+        /* #TODO: Dude where are these labels? Uncomment these lines when you add the ID
         timeLabel = findViewById(R.id.time_label);
         servingsLabel = findViewById(R.id.servings_label);
         caloriesLabel = findViewById(R.id.calories_label);
+        */
         saveButton = findViewById(R.id.save_button);
 
         // Set SeekBar listeners to update the labels
         timeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                timeLabel.setText(progress + " min");
+                // timeLabel.setText(progress + " min"); TODO: Uncomment this line when you add the ID
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -54,7 +56,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         servingsSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                servingsLabel.setText(progress + " servings");
+                // servingsLabel.setText(progress + " servings"); TODO: Uncomment this line when you add the ID
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -65,7 +67,7 @@ public class AddRecipeActivity extends AppCompatActivity {
         caloriesSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                caloriesLabel.setText(progress + " kcal");
+                // caloriesLabel.setText(progress + " kcal"); #TODO: Uncomment this line when you add the ID
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -88,12 +90,13 @@ public class AddRecipeActivity extends AppCompatActivity {
         byte[] image = null; // You can implement image selection functionality here if needed
 
         // Insert the recipe into the database
+        /* #TODO: You are missing the user ID. Uncomment this when you add the ID
         long recipeId = dbHelper.insertRecipe(recipeNameText, descriptionText, cuisine, time, servings, calories, difficulty, image);
-
         if (recipeId > 0) {
             Toast.makeText(this, "Recipe saved successfully", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Failed to save recipe", Toast.LENGTH_SHORT).show();
         }
+        */
     }
 }

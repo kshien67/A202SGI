@@ -12,11 +12,12 @@
         -->
     <item
         android:id="@+id/navigation_add"
-        android:title="Add Recipe"
-        android:icon="@drawable/ic_add_photo"/>
-        <!--
-        android:icon="@drawable/ic_profile"
-        -->
+        android:title="Add Recipe"/>
+    <!-- #TODO: Where is this file??? Uncomment when you add the icon
+    android:icon="@drawable/ic_add_photo"/>
+
+    android:icon="@drawable/ic_profile"
+    -->
     <item
         android:id="@+id/navigation_collection"
         android:title="Profile"/>
