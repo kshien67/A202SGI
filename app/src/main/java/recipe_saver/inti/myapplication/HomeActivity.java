@@ -30,11 +30,12 @@ public class HomeActivity extends AppCompatActivity {
                 If you use an activity, it will not be able to access the bottom navigation bar,
                 which is a problem because the user will not be able to navigate to other tabs.
                 PLEASE ALSO CHANGE THE MANIFEST.XML DECLARATION WHEN YOU'RE DONE
+                */
 
                 // Navigate to AddRecipeActivity
                 Intent intent = new Intent(HomeActivity.this, AddRecipeActivity.class);
                 startActivity(intent);
-                */
+
             } else if (id == R.id.navigation_collection) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ProfileFragment()).commit();
             } else if (id == R.id.navigation_settings) {
