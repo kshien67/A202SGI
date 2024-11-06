@@ -10,9 +10,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,33 +28,86 @@ public class ProfileDAO {
         mSupabaseConnector = supabaseConnector;
     }
 
-    public void upsertAvatar(final SupabaseConnector.VolleyCallback callback) {
+    public void upsertAvatar(final Bitmap bitmap, final SupabaseConnector.VolleyCallback callback) {
         String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/avatar/user_" + SupabaseConnector.userID + "_avatar.png";
-        JSONObject jsonBody = new JSONObject(); // Assuming you need to send some JSON body
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonBody,
-                new Response.Listener<JSONObject>() {
+        // Convert Bitmap to byte array
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+
+        // Check if avatar exists
+        avatarExists(new SupabaseConnector.VolleyCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+                Log.d(TAG, "Avatar exists");
+                int method = Request.Method.PUT;
+
+                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(method, url, null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                callback.onSuccess(response);
+                            }
+                        }, new Response.ErrorListener() {
                     @Override
-                    public void onResponse(JSONObject response) {
-                        callback.onSuccess(response);
+                    public void onErrorResponse(VolleyError error) {
+                        callback.onError(error);
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                callback.onError(error);
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + mSupabaseConnector.accessToken);
-                headers.put("Content-Type", "image/jpeg");
-                return headers;
-            }
-        };
+                }) {
+                    @Override
+                    public byte[] getBody() {
+                        return byteArray;
+                    }
 
-        mSupabaseConnector.getRequestQueue().add(jsonObjectRequest);
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
+                        headers.put("Authorization", "Bearer " + mSupabaseConnector.accessToken);
+                        headers.put("Content-Type", "image/jpeg");
+                        return headers;
+                    }
+                };
+
+                mSupabaseConnector.getRequestQueue().add(jsonObjectRequest);
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+                Log.e(TAG, "Avatar does not exist: " + error.getMessage());
+                int method = Request.Method.POST;
+
+                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(method, url, null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                callback.onSuccess(response);
+                            }
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        callback.onError(error);
+                    }
+                }) {
+                    @Override
+                    public byte[] getBody() {
+                        return byteArray;
+                    }
+
+                    @Override
+                    public Map<String, String> getHeaders() {
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
+                        headers.put("Authorization", "Bearer " + mSupabaseConnector.accessToken);
+                        headers.put("Content-Type", "image/jpeg");
+                        return headers;
+                    }
+                };
+
+                mSupabaseConnector.getRequestQueue().add(jsonObjectRequest);
+            }
+        });
     }
 
     public void fetchAvatar(final ImageCallback callback) {
@@ -109,6 +165,33 @@ public class ProfileDAO {
         };
 
         mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
+    }
+
+    public void avatarExists(final SupabaseConnector.VolleyCallback callback) {
+        String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/public/avatar/user_" + SupabaseConnector.userID + "_avatar.png";
+
+        StringRequest stringRequest = new StringRequest(Request.Method.HEAD, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        callback.onSuccess(new JSONObject());
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                callback.onError(error);
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
+                return headers;
+            }
+        };
+
+        mSupabaseConnector.getRequestQueue().add(stringRequest);
     }
 
     public interface ImageCallback {

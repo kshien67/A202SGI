@@ -1,7 +1,11 @@
 package recipe_saver.inti.myapplication;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.LayoutInflater;
@@ -10,6 +14,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.VolleyError;
@@ -20,6 +27,8 @@ import org.json.JSONObject;
 import recipe_saver.inti.myapplication.connector.ProfileDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
 
+import java.io.IOException;
+
 
 public class ProfileFragment extends Fragment {
 
@@ -27,12 +36,45 @@ public class ProfileFragment extends Fragment {
     private final ProfileDAO profileDAO = new ProfileDAO(SupabaseConnector.getInstance(getContext()));
     private ImageButton mBackButton;
     private ImageView mProfileImage;
+    private ImageButton mEditProfileImage;
     private TextView mUsername;
+    private ImageButton mEditUsername;
     private TextView mBio;
+    private ImageButton mEditBio;
+
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        try {
+                            Bitmap bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getActivity().getContentResolver(), imageUri));
+                            profileDAO.upsertAvatar(bitmap, new SupabaseConnector.VolleyCallback() {
+                                @Override
+                                public void onSuccess(JSONObject result) {
+                                    Log.d(TAG, "Avatar uploaded successfully");
+                                    mProfileImage.setImageBitmap(bitmap);
+                                }
+
+                                @Override
+                                public void onError(VolleyError error) {
+                                    Log.e(TAG, "Error uploading avatar: " + error.getMessage());
+                                }
+                            });
+                            mProfileImage.setImageBitmap(bitmap);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
     }
 
     @Override
@@ -48,8 +90,18 @@ public class ProfileFragment extends Fragment {
         });
 
         mProfileImage = v.findViewById(R.id.profile_image);
+        mEditProfileImage = v.findViewById(R.id.edit_profile_button);
         mUsername = v.findViewById(R.id.username);
+        mEditUsername = v.findViewById(R.id.edit_username_button);
         mBio = v.findViewById(R.id.bio);
+        mEditBio = v.findViewById(R.id.edit_bio_button);
+
+        mEditProfileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openImageChooser();
+            }
+        });
 
         updateProfile();
 
@@ -96,5 +148,12 @@ public class ProfileFragment extends Fragment {
                 Log.e(TAG, "Error retrieving user details: " + error.getMessage());
             }
         });
+    }
+
+    private void openImageChooser() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        imagePickerLauncher.launch(Intent.createChooser(intent, "Select Picture"));
     }
 }
