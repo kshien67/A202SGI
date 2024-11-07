@@ -10,10 +10,11 @@ public class RecipeImpl implements Recipe {
     private String description;
     private int timeTaken;
     private int servings;
-    private int cuisine;
+    private String cuisine;
     private String difficulty;
+    private String instructions;
 
-    public RecipeImpl(String recipeId, String userId, Bitmap image, String recipeName, String description, int timeTaken, int servings, int cuisine, String difficulty) {
+    public RecipeImpl(String recipeId, String userId, Bitmap image, String recipeName, String description, int timeTaken, int servings, String cuisine, String difficulty, String instructions) {
         this.recipeId = recipeId;
         this.userId = userId;
         this.image = image;
@@ -23,9 +24,10 @@ public class RecipeImpl implements Recipe {
         this.servings = servings;
         this.cuisine = cuisine;
         this.difficulty = difficulty;
+        this.instructions = instructions;
     }
 
-    public RecipeImpl(String userId, Bitmap image, String recipeName, String description, int timeTaken, int servings, int cuisine, String difficulty) {
+    public RecipeImpl(String userId, Bitmap image, String recipeName, String description, int timeTaken, int servings, String cuisine, String difficulty, String instructions) {
         this.recipeId = "";
         this.userId = userId;
         this.image = image;
@@ -35,9 +37,10 @@ public class RecipeImpl implements Recipe {
         this.servings = servings;
         this.cuisine = cuisine;
         this.difficulty = difficulty;
+        this.instructions = instructions;
     }
 
-    public RecipeImpl(Bitmap image, String recipeName, String description, int timeTaken, int servings, int cuisine, String difficulty) {
+    public RecipeImpl(Bitmap image, String recipeName, String description, int timeTaken, int servings, String cuisine, String difficulty, String instructions) {
         this.recipeId = "";
         this.userId = "";
         this.image = image;
@@ -47,6 +50,7 @@ public class RecipeImpl implements Recipe {
         this.servings = servings;
         this.cuisine = cuisine;
         this.difficulty = difficulty;
+        this.instructions = instructions;
     }
 
     @Override
@@ -85,12 +89,17 @@ public class RecipeImpl implements Recipe {
     }
 
     @Override
-    public int getCuisine() {
+    public String getCuisine() {
         return cuisine;
     }
 
     @Override
     public String getDifficulty() {
         return difficulty;
+    }
+
+    @Override
+    public String getInstructions() {
+        return instructions;
     }
 }

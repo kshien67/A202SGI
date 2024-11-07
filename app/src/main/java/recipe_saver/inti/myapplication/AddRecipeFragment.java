@@ -31,11 +31,13 @@ import java.io.IOException;
 
 import recipe_saver.inti.myapplication.connector.RecipeDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
+import recipe_saver.inti.myapplication.interfaces.Recipe;
+import recipe_saver.inti.myapplication.interfaces.RecipeImpl;
 
 
 public class AddRecipeFragment extends Fragment {
-    private EditText recipeNameEditText, descriptionBox, instructionsBox;
-    private Spinner cuisineDropdown, difficultyDropdown;
+    private EditText mRecipeNameEditText, mDescriptionBox, mInstructionsBox;
+    private Spinner mCuisineDropdown, mDifficultyDropdown;
     private final RecipeDAO mRecipeDAO = new RecipeDAO(SupabaseConnector.getInstance(getContext()));
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -43,66 +45,10 @@ public class AddRecipeFragment extends Fragment {
     private TextView mTimeNeededValue;
     private SeekBar mServingsSlider;
     private TextView mServingsValue;
-    private ImageButton addPhotoButton;
-    private ImageView selectedImageView;
-    private Bitmap selectedImageBitmap;
-
-    public class Recipe {
-        String name;
-        String description;
-        String cuisine;
-        int timeNeeded;
-        int servings;
-        String difficulty;
-        String instructions;
-        Bitmap image;
-
-        public Recipe(String name, String description, String cuisine, int timeNeeded, int servings,
-                      String difficulty, String instructions, Bitmap image) {
-            this.name = name;
-            this.description = description;
-            this.cuisine = cuisine;
-            this.timeNeeded = timeNeeded;
-            this.servings = servings;
-            this.difficulty = difficulty;
-            this.instructions = instructions;
-            this.image = image;
-        }
-
-        // Methods without @Override annotation
-        public String getRecipeName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getCuisine() {
-            return cuisine;
-        }
-
-        public int getTimeTaken() {
-            return timeNeeded;
-        }
-
-        public int getServings() {
-            return servings;
-        }
-
-        public String getDifficulty() {
-            return difficulty;
-        }
-
-        public String getInstructions() {
-            return instructions;
-        }
-
-        public Bitmap getImage() {
-            return image;
-        }
-
-    }
+    private ImageButton mAddPhotoButton;
+    private ImageView mSelectedImageView;
+    private Bitmap mSelectedImageBitmap;
+    private Button mSaveButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -115,8 +61,8 @@ public class AddRecipeFragment extends Fragment {
                         Uri imageUri = result.getData().getData();
                         try {
                             Bitmap bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getActivity().getContentResolver(), imageUri));
-                            selectedImageBitmap = bitmap;
-                            addPhotoButton.setImageBitmap(bitmap);
+                            mAddPhotoButton.setImageBitmap(bitmap);
+                            mSelectedImageBitmap = bitmap;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -129,21 +75,21 @@ public class AddRecipeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_recipe, container, false);
 
-        // Initialize the SeekBars and TextViews
-
+        // Initialize widgets
+        mRecipeNameEditText = view.findViewById(R.id.recipe_name_entry);
+        mDescriptionBox = view.findViewById(R.id.description_box);
+        mInstructionsBox = view.findViewById(R.id.instructions_box);
         mTimeNeededSlider = view.findViewById(R.id.time_needed_slider);
         mTimeNeededValue = view.findViewById(R.id.time_needed_value);
         mServingsSlider = view.findViewById(R.id.servings_slider);
         mServingsValue = view.findViewById(R.id.servings_value);
-
-        // Find the ImageButton in the layout
-        ImageButton addPhotoButton = view.findViewById(R.id.add_photo_button);
-
-        Button saveButton = view.findViewById(R.id.save_button);
-
+        mCuisineDropdown = view.findViewById(R.id.cuisine_dropdown);
+        mDifficultyDropdown = view.findViewById(R.id.difficulty_dropdown);
+        mAddPhotoButton = view.findViewById(R.id.add_photo_button);
+        mSaveButton = view.findViewById(R.id.save_button);
 
         // Set an OnClickListener on the ImageButton to open the image chooser
-        addPhotoButton.setOnClickListener(v -> openImageChooser());
+        mAddPhotoButton.setOnClickListener(v -> openImageChooser());
 
         // Set initial values for TextViews based on SeekBar progress
         mTimeNeededValue.setText(getString(R.string.time_needed_placeholder, mTimeNeededSlider.getProgress()));
@@ -177,32 +123,37 @@ public class AddRecipeFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        // Get the references to the Spinners
-        cuisineDropdown = view.findViewById(R.id.cuisine_dropdown);
-        difficultyDropdown = view.findViewById(R.id.difficulty_dropdown);
-
         // Set the save button's onClickListener
-        saveButton.setOnClickListener(v -> {
+        mSaveButton.setOnClickListener(v -> {
             // Collect data from UI elements
-            String recipeName = recipeNameEditText.getText().toString().trim();
-            String description = descriptionBox.getText().toString().trim();
-            String cuisine = cuisineDropdown.getSelectedItem().toString();
+            String recipeName = mRecipeNameEditText.getText().toString().trim();
+            String description = mDescriptionBox.getText().toString().trim();
+            String cuisine = mCuisineDropdown.getSelectedItem().toString();
             int timeNeeded = mTimeNeededSlider.getProgress();
             int servings = mServingsSlider.getProgress() + 1;
-            String difficulty = difficultyDropdown.getSelectedItem().toString();
-            String instructions = instructionsBox.getText().toString().trim();
+            String difficulty = mDifficultyDropdown.getSelectedItem().toString();
+            String instructions = mInstructionsBox.getText().toString().trim();
 
             // Validation: Check if all fields are filled
-            if (selectedImageBitmap == null || recipeName.isEmpty() || description.isEmpty() ||
+            if (mSelectedImageBitmap == null || recipeName.isEmpty() || description.isEmpty() ||
                     cuisine.isEmpty() || difficulty.isEmpty() || instructions.isEmpty()) {
                 Toast.makeText(getContext(), "Please fill up all the information", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             // Create a Recipe object
-            Recipe recipe = new Recipe(recipeName, description, cuisine, timeNeeded, servings, difficulty, instructions, selectedImageBitmap);
+            Recipe recipe = new RecipeImpl(
+                    mSelectedImageBitmap,
+                    recipeName,
+                    description,
+                    timeNeeded,
+                    servings,
+                    cuisine,
+                    difficulty,
+                    instructions
+            );
 
-// Use mRecipeDAO.addRecipe and pass the required parameters
+            // Use mRecipeDAO.addRecipe and pass the required parameters
             mRecipeDAO.addRecipe(recipe, new SupabaseConnector.VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject response) {

@@ -10,6 +10,7 @@ public interface Recipe {
     String getDescription();
     int getTimeTaken();
     int getServings();
-    int getCuisine();
+    String getCuisine();
     String getDifficulty();
+    String getInstructions();
 }
