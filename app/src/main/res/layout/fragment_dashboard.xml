@@ -6,8 +6,8 @@
 
     <ImageButton
         android:id="@+id/dashboard_pfp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:src="@drawable/ic_temp_avatar"
         android:background="@android:color/transparent"
         />

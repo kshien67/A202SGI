@@ -132,68 +132,36 @@
 
     <TextView
         android:id="@+id/bio"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32px"
         android:gravity="center"
         android:text="The Bio will be written here."
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bio_layout"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.8"
         />
 
     <HorizontalScrollView
         android:id="@+id/recipe_scroll_area"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:scrollbars="none"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" >
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_percent="0.25">
 
         <LinearLayout
             android:id="@+id/recipe_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:gravity="top"
             android:orientation="horizontal"
             app:layout_constraintTop_toTopOf="@id/recipe_scroll_area"
             app:layout_constraintBottom_toBottomOf="@id/recipe_scroll_area"
             app:layout_constraintStart_toStartOf="parent">
-
-            <ImageView
-                android:id="@+id/recipe_image"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_temp_avatar" />
-
-            <ImageView
-                android:id="@+id/recipe_image2"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_temp_avatar" />
-
-            <ImageView
-                android:id="@+id/recipe_image3"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_temp_avatar" />
-
-            <ImageView
-                android:id="@+id/recipe_image4"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_temp_avatar" />
-
-            <ImageView
-                android:id="@+id/recipe_image5"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
-                android:layout_margin="8dp"
-                android:src="@drawable/ic_temp_avatar" />
 
         </LinearLayout>
     </HorizontalScrollView>
