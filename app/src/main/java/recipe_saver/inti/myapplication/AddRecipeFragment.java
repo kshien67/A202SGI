@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -20,12 +19,12 @@ import androidx.fragment.app.Fragment;
 
 import java.io.IOException;
 
-import recipe_saver.inti.myapplication.connector.AddDAO;
+import recipe_saver.inti.myapplication.connector.RecipeDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
 
 public class AddRecipeFragment extends Fragment {
 
-    private final AddDAO mAddDAOddDAO = new AddDAO(SupabaseConnector.getInstance(getContext()));
+    private final RecipeDAO mRecipeDAO = new RecipeDAO(SupabaseConnector.getInstance(getContext()));
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     private SeekBar mTimeNeededSlider;
