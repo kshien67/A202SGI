@@ -1,6 +1,5 @@
 package recipe_saver.inti.myapplication.connector;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 
@@ -138,9 +137,9 @@ public class ProfileDAO {
         mSupabaseConnector.getRequestQueue().add(imageRequest);
     }
 
-    public void fetchUserDetails(final VolleyCallback callback) {
+    public void fetchUserProfile(final VolleyCallback callback) {
         String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?select=username,bio";
-        Log.d(TAG, "Fetch User Details URL: " + url);
+        Log.d(TAG, "Fetch User Profile URL: " + url);
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONArray>() {
@@ -151,7 +150,7 @@ public class ProfileDAO {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, "Fetch User Details Error: " + error.getMessage());
+                Log.e(TAG, "Fetch User Profile Error: " + error.getMessage());
                 callback.onError(error);
             }
         }) {
@@ -159,12 +158,73 @@ public class ProfileDAO {
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + mSupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "BEARER " + mSupabaseConnector.SUPABASE_KEY);
                 return headers;
             }
         };
 
         mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
+    }
+
+    public void fetchUserDetails(final UserDetailsCallback callback) {
+        String urlRecipesCreated = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe?select=recipe_id,user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userID;
+        String urlRecipesLiked = SupabaseConnector.SUPABASE_URL + "/rest/v1/userrecipeaction?select=user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userID + "&action_type=eq.Like";
+        String urlRecipesCollected = SupabaseConnector.SUPABASE_URL + "/rest/v1/userrecipeaction?select=user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userID + "&action_type=eq.Collect";
+
+        JsonArrayRequest recipesCreatedRequest = new JsonArrayRequest(Request.Method.GET, urlRecipesCreated, null,
+                response -> {
+                    int count = response.length();
+                    callback.onRecipesCreatedCount(count);
+                }, error -> {
+                    Log.e(TAG, "Fetch User Details Error: " + error.getMessage());
+                    callback.onError(error);
+                }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "BEARER " + mSupabaseConnector.SUPABASE_KEY);
+                return headers;
+            }
+        };
+
+        JsonArrayRequest recipesLikedRequest = new JsonArrayRequest(Request.Method.GET, urlRecipesLiked, null,
+                response -> {
+                    int count = response.length();
+                    callback.onRecipesLikedCount(count);
+                }, error -> {
+                    Log.e(TAG, "Fetch User Details Error: " + error.getMessage());
+                    callback.onError(error);
+                }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "BEARER " + mSupabaseConnector.SUPABASE_KEY);
+                return headers;
+            }
+        };
+
+        JsonArrayRequest recipesCollectedRequest = new JsonArrayRequest(Request.Method.GET, urlRecipesCollected, null,
+                response -> {
+                    int count = response.length();
+                    callback.onRecipesCollectedCount(count);
+                }, error -> {
+                    Log.e(TAG, "Fetch User Details Error: " + error.getMessage());
+                    callback.onError(error);
+                }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "BEARER " + mSupabaseConnector.SUPABASE_KEY);
+                return headers;
+            }
+        };
+
+        mSupabaseConnector.getRequestQueue().add(recipesCreatedRequest);
+        mSupabaseConnector.getRequestQueue().add(recipesLikedRequest);
+        mSupabaseConnector.getRequestQueue().add(recipesCollectedRequest);
     }
 
     public void updateUsername(final String newUsername, final SupabaseConnector.VolleyCallback callback) {
@@ -246,11 +306,24 @@ public class ProfileDAO {
 
     public interface ImageCallback {
         void onSuccess(Bitmap result);
+
         void onError(VolleyError error);
     }
 
     public interface VolleyCallback {
         void onSuccess(JSONArray result);
+
         void onError(VolleyError error);
     }
+
+    public interface UserDetailsCallback {
+        void onRecipesCreatedCount(int count);
+
+        void onRecipesCollectedCount(int count);
+
+        void onRecipesLikedCount(int count);
+
+        void onError(VolleyError error);
+    }
+
 }

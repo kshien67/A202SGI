@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.LayoutInflater;
@@ -19,7 +18,6 @@ import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
@@ -134,10 +132,11 @@ public class ProfileFragment extends Fragment {
     private void populateRecipeLayout() {
         Log.d(TAG, "Populating recipe layout");
         // Create a list of texts for the CardViews
+
         List<String[]> cardTexts = Arrays.asList(
                 new String[]{"Recipes Created", "0"},
-                new String[]{"Recipes Collected", "1"},
-                new String[]{"Recipes Liked", "2"}
+                new String[]{"Recipes Collected", "0"},
+                new String[]{"Recipes Liked", "0"}
         );
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
@@ -182,8 +181,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-
-        profileDAO.fetchUserDetails(new ProfileDAO.VolleyCallback() {
+        profileDAO.fetchUserProfile(new ProfileDAO.VolleyCallback() {
             @Override
             public void onSuccess(JSONArray result) {
                 Log.d(TAG, "User details retrieved successfully");
@@ -204,6 +202,34 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onError(VolleyError error) {
                 Log.e(TAG, "Error retrieving user details: " + error.getMessage());
+            }
+        });
+
+        profileDAO.fetchUserDetails(new ProfileDAO.UserDetailsCallback() {
+            @Override
+            public void onRecipesCreatedCount(int count) {
+                Log.d(TAG, "Recipes created: " + count);
+                TextView textView = (TextView) mRecipeLayout.getChildAt(0).findViewById(R.id.subtitle_text);
+                textView.setText(String.valueOf(count));
+            }
+
+            @Override
+            public void onRecipesCollectedCount(int count) {
+                Log.d(TAG, "Recipes collected: " + count);
+                TextView textView = (TextView) mRecipeLayout.getChildAt(1).findViewById(R.id.subtitle_text);
+                textView.setText(String.valueOf(count));
+            }
+
+            @Override
+            public void onRecipesLikedCount(int count) {
+                Log.d(TAG, "Recipes liked: " + count);
+                TextView textView = (TextView) mRecipeLayout.getChildAt(2).findViewById(R.id.subtitle_text);
+                textView.setText(String.valueOf(count));
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+
             }
         });
     }
