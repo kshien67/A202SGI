@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Recipe Saver</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Log Out</string>
+    <string name="reset_password">Reset Password</string>
 
     <string-array name="cuisine_array">
         <item>Chinese</item>
