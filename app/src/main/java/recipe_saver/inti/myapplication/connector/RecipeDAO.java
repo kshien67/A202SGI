@@ -8,11 +8,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.android.volley.toolbox.StringRequest;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -22,17 +17,19 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import org.json.JSONObject;
+import org.json.JSONException;
 
+import recipe_saver.inti.myapplication.interfaces.Ingredient;
 import recipe_saver.inti.myapplication.interfaces.IngredientImpl;
 import recipe_saver.inti.myapplication.interfaces.Recipe;
-import recipe_saver.inti.myapplication.interfaces.Ingredient;
 
 public class RecipeDAO {
     private static final String TAG = "RecipeDAO";
-    private SupabaseConnector mSupabaseConnector;
+    private final SupabaseConnector mSupabaseConnector;
 
     public RecipeDAO(SupabaseConnector supabaseConnector) {
-        mSupabaseConnector = supabaseConnector;
+        this.mSupabaseConnector = supabaseConnector;
     }
 
     public void addRecipe(Recipe recipe, FetchCallback callback) {
@@ -47,7 +44,6 @@ public class RecipeDAO {
             jsonBody.put("time_taken", recipe.getTimeTaken());
             jsonBody.put("servings", recipe.getServings());
             jsonBody.put("difficulty", recipe.getDifficulty());
-            Log.d(TAG, "addRecipe: " + jsonBody.toString());
             jsonBody.put("image", bitmapToBase64(recipe.getImage()));
         } catch (JSONException e) {
             e.printStackTrace();
@@ -57,7 +53,7 @@ public class RecipeDAO {
                 Request.Method.POST,
                 url,
                 response -> {
-                    Log.d(TAG, "Recipe added");
+                    Log.d(TAG, "Recipe added successfully");
                     callback.onSuccess();
                 },
                 callback::onError
@@ -66,6 +62,7 @@ public class RecipeDAO {
             public byte[] getBody() {
                 return jsonBody.toString().getBytes();
             }
+
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
@@ -80,44 +77,6 @@ public class RecipeDAO {
         mSupabaseConnector.getRequestQueue().add(stringRequest);
     }
 
-    public void updateRecipe(Recipe recipe, SupabaseConnector.VolleyCallback callback) {
-        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe?recipe_id=eq." + recipe.getRecipeId();
-        JSONObject jsonBody = new JSONObject();
-
-        try {
-            jsonBody.put("user_id", SupabaseConnector.userID);
-            jsonBody.put("image", bitmapToBase64(recipe.getImage()));
-            jsonBody.put("recipe_name", recipe.getRecipeName());
-            jsonBody.put("description", recipe.getDescription());
-            jsonBody.put("cuisine", recipe.getCuisine());
-            jsonBody.put("time_taken", recipe.getTimeTaken());
-            jsonBody.put("servings", recipe.getServings());
-            jsonBody.put("difficulty", recipe.getDifficulty());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Request.Method.PATCH,
-                url,
-                jsonBody,
-                callback::onSuccess,
-                callback::onError
-        ) {
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
-                headers.put("Content-Type", "application/json");
-                headers.put("Prefer", "return=minimal");
-                return headers;
-            }
-        };
-
-        mSupabaseConnector.getRequestQueue().add(jsonObjectRequest);
-    }
-
     public void fetchAllIngredients(IngredientCallback callback) {
         String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/ingredient?select=*";
 
@@ -127,7 +86,7 @@ public class RecipeDAO {
                 null,
                 response -> {
                     Gson gson = new Gson();
-                    Type listType = new TypeToken<List<Ingredient>>() {}.getType();
+                    Type listType = new TypeToken<List<IngredientImpl>>() {}.getType();
                     List<IngredientImpl> ingredients = gson.fromJson(response.toString(), listType);
                     callback.onSuccess(ingredients);
                 },
@@ -146,7 +105,7 @@ public class RecipeDAO {
         mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
     }
 
-    public void upsertRecipeIngredient(Recipe recipe, Ingredient ingredient, Double grams, SupabaseConnector.VolleyCallback callback) {
+    public void upsertRecipeIngredient(Recipe recipe, Ingredient ingredient, double grams, FetchCallback callback) {
         String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipeingredient";
         JSONObject jsonBody = new JSONObject();
 
@@ -162,7 +121,10 @@ public class RecipeDAO {
                 Request.Method.POST,
                 url,
                 jsonBody,
-                callback::onSuccess,
+                response -> {
+                    Log.d(TAG, "Ingredient upserted successfully");
+                    callback.onSuccess();
+                },
                 callback::onError
         ) {
             @Override
@@ -177,40 +139,6 @@ public class RecipeDAO {
         };
 
         mSupabaseConnector.getRequestQueue().add(jsonObjectRequest);
-    }
-
-    public void deleteRecipe(Recipe recipe, SupabaseConnector.VolleyCallback callback) {
-        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe?recipe_id=eq." + recipe.getRecipeId();
-
-        StringRequest stringRequest = new StringRequest(
-                Request.Method.DELETE,
-                url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.d(TAG, "Recipe deleted");
-                        // Callback expects a JSONObject, not a String
-                        // I don't think this is a problem because the response is empty
-                        // Implement a new interface method if you need to handle this
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        callback.onError(error);
-                    }
-                }
-        ) {
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
-                return headers;
-            }
-        };
-
-        mSupabaseConnector.getRequestQueue().add(stringRequest);
     }
 
     public interface IngredientCallback {

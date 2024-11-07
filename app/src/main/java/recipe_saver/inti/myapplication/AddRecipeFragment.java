@@ -23,18 +23,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import org.json.JSONObject;
 import com.android.volley.VolleyError;
 
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import recipe_saver.inti.myapplication.connector.RecipeDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
 import recipe_saver.inti.myapplication.interfaces.Recipe;
 import recipe_saver.inti.myapplication.interfaces.RecipeImpl;
-
 
 public class AddRecipeFragment extends Fragment {
     private EditText mRecipeNameEditText, mDescriptionBox, mInstructionsBox;
@@ -142,6 +143,11 @@ public class AddRecipeFragment extends Fragment {
                 return;
             }
 
+            // Parse ingredients and quantities from instructions
+            ArrayList<String> ingredientList = new ArrayList<>();
+            ArrayList<String> quantityList = new ArrayList<>();
+            parseIngredientsAndQuantities(instructions, ingredientList, quantityList);
+
             // Create a Recipe object
             Recipe recipe = new RecipeImpl(
                     mSelectedImageBitmap,
@@ -155,27 +161,25 @@ public class AddRecipeFragment extends Fragment {
             );
 
             // Use mRecipeDAO.addRecipe and pass the required parameters
-            mRecipeDAO.addRecipe(recipe, new RecipeDAO.FetchCallback() {
+            mRecipeDAO.addRecipe(recipe, ingredientList, quantityList, new RecipeDAO.FetchCallback() {
                 @Override
                 public void onSuccess() {
-                    // Handle the success case with the response object
+                    // Handle success
                     Toast.makeText(getContext(), "Recipe saved successfully", Toast.LENGTH_SHORT).show();
 
                     // Redirect or update UI after saving
                     FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
-                    transaction.replace(R.id.fragment_container, new DashboardFragment()); // Replace with your dashboard fragment
+                    transaction.replace(R.id.fragment_container, new DashboardFragment());
                     transaction.commit();
                 }
 
                 @Override
                 public void onError(VolleyError error) {
-                    // Handle the error case using VolleyError
+                    // Handle error
                     Toast.makeText(getContext(), "Failed to save recipe: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                     Log.e("AddRecipeFragment", "Failed to save recipe", error);
                 }
             });
-
-
 
         });
 
@@ -187,5 +191,40 @@ public class AddRecipeFragment extends Fragment {
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         imagePickerLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+    }
+
+    // Parse ingredients and quantities from the instructions
+    private void parseIngredientsAndQuantities(String instructions, ArrayList<String> ingredientList, ArrayList<String> quantityList) {
+        Pattern pattern = Pattern.compile("\\[(\\d+\\s?(g|kg|mg|ton|tons|kilogram|milligram)?)\\[([a-zA-Z\\s]+)\\]]");
+        Matcher matcher = pattern.matcher(instructions);
+
+        while (matcher.find()) {
+            String quantity = matcher.group(1).trim();
+            String unit = matcher.group(2);
+            String ingredient = matcher.group(3).trim();
+
+            // Convert all units to grams
+            double quantityInGrams = convertToGrams(quantity, unit);
+
+            ingredientList.add(ingredient);
+            quantityList.add(String.valueOf(quantityInGrams));
+        }
+    }
+
+    private double convertToGrams(String quantity, String unit) {
+        double value = Double.parseDouble(quantity.replaceAll("[^\\d.]", ""));
+        switch (unit.toLowerCase()) {
+            case "kg":
+            case "kilogram":
+                return value * 1000;
+            case "mg":
+            case "milligram":
+                return value / 1000;
+            case "ton":
+            case "tons":
+                return value * 1_000_000;
+            default: // Assume grams if no conversion needed
+                return value;
+        }
     }
 }
