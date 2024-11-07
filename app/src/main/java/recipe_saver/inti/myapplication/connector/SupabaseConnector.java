@@ -15,6 +15,7 @@ public class SupabaseConnector {
     protected static final String SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlY3RxeXBhcG9qbmRwb29zZnphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg2MzE0MzUsImV4cCI6MjA0NDIwNzQzNX0.6XY2mYEtVrmD9rKyoxjsijLHCNvyv4fQ2qEAAhhrdYg";
     protected static String accessToken = null;
     protected static String userID = null;
+    protected static String userAuthID = null;
 
     protected SupabaseConnector(Context context) {
         ctx = context;
