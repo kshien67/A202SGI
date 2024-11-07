@@ -1,0 +1,191 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll_view_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_gravity="top">
+
+        <!-- Add Photo Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:background="#F99351"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginBottom="30dp">
+
+            <ImageButton
+                android:id="@+id/add_photo_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:src="@drawable/plus"
+                android:contentDescription="@string/add_photo" />
+
+
+            <TextView
+                android:id="@+id/add_photo_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_photo"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:layout_marginTop="10dp" />
+
+        </LinearLayout>
+
+        <!-- Recipe Name Entry -->
+        <EditText
+            android:id="@+id/recipe_name_entry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/recipe_name"
+            android:textColorHint="#737373"
+            android:textColor="#000000"
+            android:background="@drawable/rounded_edittext"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:minHeight="50dp"
+            android:layout_marginBottom="30dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:inputType="textCapWords"
+            android:autofillHints="name" />
+
+        <!-- Cuisine Drop Down -->
+        <Spinner
+            android:id="@+id/cuisine_dropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/cuisine_array"
+            android:background="@drawable/rounded_spinner"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:minHeight="50dp"
+            android:layout_marginBottom="30dp" />
+
+        <!-- Description Box -->
+        <EditText
+            android:id="@+id/description_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/description"
+            android:textColorHint="#737373"
+            android:textColor="#000000"
+            android:minLines="3"
+            android:gravity="top"
+            android:background="@drawable/rounded_edittext"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="10dp"
+            android:minHeight="100dp"
+            android:layout_marginBottom="30dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:inputType="textCapSentences|textMultiLine"
+            android:autofillHints="description" />
+
+        <!-- Time Needed Slider -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/time_needed"
+            android:textColor="#000000"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Display current time needed value -->
+        <TextView
+            android:id="@+id/time_needed_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/default_time_value"
+            android:textColor="#000000"
+            android:layout_marginBottom="10dp"/>
+
+        <SeekBar
+            android:id="@+id/time_needed_slider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="300"
+            android:progressTint="#434343"
+            android:layout_marginBottom="30dp" />
+
+        <!-- Servings Slider -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/servings"
+            android:textColor="#000000"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Display current servings value -->
+        <TextView
+            android:id="@+id/servings_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/default_servings_value"
+            android:textColor="#000000"
+            android:layout_marginBottom="10dp"/>
+
+        <SeekBar
+            android:id="@+id/servings_slider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="20"
+            android:progressTint="#434343"
+            android:layout_marginBottom="30dp" />
+
+        <!-- Difficulty Drop Down -->
+        <Spinner
+            android:id="@+id/difficulty_dropdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/difficulty_array"
+            android:background="@drawable/rounded_spinner"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:minHeight="50dp"
+            android:layout_marginBottom="30dp" />
+
+        <!-- Instructions Box -->
+        <EditText
+            android:id="@+id/instructions_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/instructions"
+            android:textColorHint="#737373"
+            android:textColor="#000000"
+            android:minLines="5"
+            android:gravity="top"
+            android:background="@drawable/rounded_edittext"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="10dp"
+            android:minHeight="120dp"
+            android:layout_marginBottom="30dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:inputType="textCapSentences|textMultiLine"
+            android:autofillHints="instructions" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="@string/save"
+            android:textColor="#FE8E46"
+            android:background="@drawable/rounded_button"
+            android:layout_gravity="center"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp" />
+    </LinearLayout>
+</ScrollView>

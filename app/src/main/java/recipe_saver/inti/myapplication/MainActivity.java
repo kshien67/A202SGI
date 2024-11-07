@@ -14,6 +14,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
+        setContentView(R.layout.activity_main);
+        SupabaseClient.fetchTableData();
         finish();
     }
 }

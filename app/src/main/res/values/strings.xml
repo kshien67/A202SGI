@@ -1,12 +1,28 @@
 <resources>
     <string name="app_name">Recipe Saver</string>
 
+    <!-- Placeholders for SeekBar Values -->
+    <string name="time_needed_placeholder">%1$d mins</string>
+    <string name="servings_placeholder">%1$d servings</string>
+    <string name="default_time_value">0 mins</string>
+    <string name="default_servings_value">1 serving</string>
+
+    <!-- Labels -->
+    <string name="add_photo">Add Photo</string>
+    <string name="recipe_name">Recipe Name</string>
+    <string name="description">Description</string>
+    <string name="time_needed">Time Needed</string>
+    <string name="servings">Servings</string>
+    <string name="difficulty">Difficulty</string>
+    <string name="instructions">Instructions</string>
+    <string name="save">SAVE</string>
+
+    <!-- Arrays -->
     <string-array name="cuisine_array">
         <item>Chinese</item>
         <item>Japanese</item>
-        <item>Italy</item>
+        <item>Italian</item>
         <item>Korean</item>
-        <!-- Add more if needed -->
     </string-array>
 
     <string-array name="difficulty_array">
