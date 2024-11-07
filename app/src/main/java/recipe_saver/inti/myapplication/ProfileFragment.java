@@ -8,6 +8,9 @@ import android.widget.ImageButton;
 
 import androidx.fragment.app.Fragment;
 
+import recipe_saver.inti.myapplication.connector.AddDAO;
+import recipe_saver.inti.myapplication.connector.SupabaseConnector;
+
 public class ProfileFragment extends Fragment {
 
     private ImageButton mBackButton;

@@ -1,5 +1,9 @@
 package recipe_saver.inti.myapplication;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,38 +11,70 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import java.io.OutputStreamWriter;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+
+import java.io.IOException;
+
+import recipe_saver.inti.myapplication.connector.AddDAO;
+import recipe_saver.inti.myapplication.connector.SupabaseConnector;
 
 public class AddRecipeFragment extends Fragment {
-    private static final String SUPABASE_URL = "https://eectqypapojndpoosfza.supabase.co/rest/v1/recipes";
-    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlY3RxeXBhcG9qbmRwb29zZnphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjg2MzE0MzUsImV4cCI6MjA0NDIwNzQzNX0.6XY2mYEtVrmD9rKyoxjsijLHCNvyv4fQ2qEAAhhrdYg";
 
-    @Nullable
+    private final AddDAO mAddDAOddDAO = new AddDAO(SupabaseConnector.getInstance(getContext()));
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
+
+    private SeekBar mTimeNeededSlider;
+    private TextView mTimeNeededValue;
+    private SeekBar mServingsSlider;
+    private TextView mServingsValue;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        try {
+                            Bitmap bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getActivity().getContentResolver(), imageUri));
+                            /*
+                            // Database code to save the image
+                            // Update the image in the UI
+                            */
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_recipe, container, false);
 
         // Initialize the SeekBars and TextViews
-        SeekBar timeNeededSlider = view.findViewById(R.id.time_needed_slider);
-        TextView timeNeededValue = view.findViewById(R.id.time_needed_value);
-        SeekBar servingsSlider = view.findViewById(R.id.servings_slider);
-        TextView servingsValue = view.findViewById(R.id.servings_value);
+        mTimeNeededSlider = view.findViewById(R.id.time_needed_slider);
+        mTimeNeededValue = view.findViewById(R.id.time_needed_value);
+        mServingsSlider = view.findViewById(R.id.servings_slider);
+        mServingsValue = view.findViewById(R.id.servings_value);
 
         // Set initial values for TextViews based on SeekBar progress
-        timeNeededValue.setText(getString(R.string.time_needed_placeholder, timeNeededSlider.getProgress()));
-        servingsValue.setText(getString(R.string.servings_placeholder, servingsSlider.getProgress() + 1)); // Starting at 1 serving
+        mTimeNeededValue.setText(getString(R.string.time_needed_placeholder, mTimeNeededSlider.getProgress()));
+        mServingsValue.setText(getString(R.string.servings_placeholder, mServingsSlider.getProgress() + 1));
 
         // Update TextView when timeNeededSlider is adjusted
-        timeNeededSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mTimeNeededSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                timeNeededValue.setText(getString(R.string.time_needed_placeholder, progress));
+                mTimeNeededValue.setText(getString(R.string.time_needed_placeholder, progress));
             }
 
             @Override
@@ -49,10 +85,10 @@ public class AddRecipeFragment extends Fragment {
         });
 
         // Update TextView when servingsSlider is adjusted
-        servingsSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mServingsSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                servingsValue.setText(getString(R.string.servings_placeholder, progress + 1)); // Add 1 to ensure at least 1 serving
+                mServingsValue.setText(getString(R.string.servings_placeholder, progress + 1));
             }
 
             @Override
@@ -63,5 +99,12 @@ public class AddRecipeFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void openImageChooser() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        imagePickerLauncher.launch(Intent.createChooser(intent, "Select Picture"));
     }
 }
