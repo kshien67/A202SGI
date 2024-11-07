@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -131,7 +132,7 @@ public class AddRecipeFragment extends Fragment {
             String cuisine = mCuisineDropdown.getSelectedItem().toString();
             int timeNeeded = mTimeNeededSlider.getProgress();
             int servings = mServingsSlider.getProgress() + 1;
-            String difficulty = mDifficultyDropdown.getSelectedItem().toString();
+            String difficulty = mDifficultyDropdown.getSelectedItem().toString().toLowerCase();
             String instructions = mInstructionsBox.getText().toString().trim();
 
             // Validation: Check if all fields are filled
@@ -154,9 +155,9 @@ public class AddRecipeFragment extends Fragment {
             );
 
             // Use mRecipeDAO.addRecipe and pass the required parameters
-            mRecipeDAO.addRecipe(recipe, new SupabaseConnector.VolleyCallback() {
+            mRecipeDAO.addRecipe(recipe, new RecipeDAO.FetchCallback() {
                 @Override
-                public void onSuccess(JSONObject response) {
+                public void onSuccess() {
                     // Handle the success case with the response object
                     Toast.makeText(getContext(), "Recipe saved successfully", Toast.LENGTH_SHORT).show();
 
@@ -170,6 +171,7 @@ public class AddRecipeFragment extends Fragment {
                 public void onError(VolleyError error) {
                     // Handle the error case using VolleyError
                     Toast.makeText(getContext(), "Failed to save recipe: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("AddRecipeFragment", "Failed to save recipe", error);
                 }
             });
 

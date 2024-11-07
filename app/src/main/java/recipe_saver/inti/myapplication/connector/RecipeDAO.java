@@ -35,42 +35,49 @@ public class RecipeDAO {
         mSupabaseConnector = supabaseConnector;
     }
 
-    public void addRecipe(Recipe recipe, SupabaseConnector.VolleyCallback callback) {
+    public void addRecipe(Recipe recipe, FetchCallback callback) {
         String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe";
         JSONObject jsonBody = new JSONObject();
 
         try {
             jsonBody.put("user_id", SupabaseConnector.userID);
-            jsonBody.put("image", bitmapToBase64(recipe.getImage()));
             jsonBody.put("recipe_name", recipe.getRecipeName());
             jsonBody.put("description", recipe.getDescription());
             jsonBody.put("cuisine", recipe.getCuisine());
             jsonBody.put("time_taken", recipe.getTimeTaken());
             jsonBody.put("servings", recipe.getServings());
             jsonBody.put("difficulty", recipe.getDifficulty());
+            Log.d(TAG, "addRecipe: " + jsonBody.toString());
+            jsonBody.put("image", bitmapToBase64(recipe.getImage()));
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+        StringRequest stringRequest = new StringRequest(
                 Request.Method.POST,
                 url,
-                jsonBody,
-                callback::onSuccess,
+                response -> {
+                    Log.d(TAG, "Recipe added");
+                    callback.onSuccess();
+                },
                 callback::onError
         ) {
+            @Override
+            public byte[] getBody() {
+                return jsonBody.toString().getBytes();
+            }
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
                 headers.put("Content-Type", "application/json");
                 headers.put("Prefer", "return=minimal");
                 return headers;
             }
         };
 
-        mSupabaseConnector.getRequestQueue().add(jsonObjectRequest);
+        mSupabaseConnector.getRequestQueue().add(stringRequest);
     }
 
     public void updateRecipe(Recipe recipe, SupabaseConnector.VolleyCallback callback) {
@@ -101,7 +108,7 @@ public class RecipeDAO {
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
                 headers.put("Content-Type", "application/json");
                 headers.put("Prefer", "return=minimal");
                 return headers;
@@ -118,27 +125,19 @@ public class RecipeDAO {
                 Request.Method.GET,
                 url,
                 null,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        Gson gson = new Gson();
-                        Type listType = new TypeToken<List<Ingredient>>() {}.getType();
-                        List<IngredientImpl> ingredients = gson.fromJson(response.toString(), listType);
-                        callback.onSuccess(ingredients);
-                    }
+                response -> {
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<List<Ingredient>>() {}.getType();
+                    List<IngredientImpl> ingredients = gson.fromJson(response.toString(), listType);
+                    callback.onSuccess(ingredients);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        callback.onError(error);
-                    }
-                }
+                callback::onError
         ) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
                 headers.put("Content-Type", "application/json");
                 return headers;
             }
@@ -170,7 +169,7 @@ public class RecipeDAO {
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
                 headers.put("Content-Type", "application/json");
                 headers.put("Prefer", "resolution=merge-duplicates");
                 return headers;
@@ -206,7 +205,7 @@ public class RecipeDAO {
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
                 return headers;
             }
         };
@@ -216,6 +215,11 @@ public class RecipeDAO {
 
     public interface IngredientCallback {
         void onSuccess(List<IngredientImpl> ingredients);
+        void onError(VolleyError error);
+    }
+
+    public interface FetchCallback {
+        void onSuccess();
         void onError(VolleyError error);
     }
 
