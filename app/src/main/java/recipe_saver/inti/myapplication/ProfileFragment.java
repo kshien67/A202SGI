@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -31,6 +32,8 @@ import recipe_saver.inti.myapplication.connector.ProfileDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class ProfileFragment extends Fragment {
@@ -44,6 +47,7 @@ public class ProfileFragment extends Fragment {
     private ImageButton mEditUsername;
     private TextView mBio;
     private ImageButton mEditBio;
+    private LinearLayout mRecipeLayout;
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -98,6 +102,7 @@ public class ProfileFragment extends Fragment {
         mEditUsername = v.findViewById(R.id.edit_username_button);
         mBio = v.findViewById(R.id.bio);
         mEditBio = v.findViewById(R.id.edit_bio_button);
+        mRecipeLayout = v.findViewById(R.id.recipe_layout);
 
         mEditProfileImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,8 +126,44 @@ public class ProfileFragment extends Fragment {
         });
 
         updateProfile();
+        populateRecipeLayout();
 
         return v;
+    }
+
+    private void populateRecipeLayout() {
+        Log.d(TAG, "Populating recipe layout");
+        // Create a list of texts for the CardViews
+        List<String[]> cardTexts = Arrays.asList(
+                new String[]{"Recipes Created", "0"},
+                new String[]{"Recipes Collected", "1"},
+                new String[]{"Recipes Liked", "2"}
+        );
+
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+
+        for (int i = 0; i < cardTexts.size(); i++) {
+            String[] texts = cardTexts.get(i);
+            View cardView = inflater.inflate(R.layout.rounded_rectangle_text, mRecipeLayout, false);
+            Log.d(TAG, "Adding card view: " + texts[0]);
+
+            TextView titleTextView = cardView.findViewById(R.id.title_text);
+            TextView subtitleTextView = cardView.findViewById(R.id.subtitle_text);
+
+            titleTextView.setText(texts[0]);
+            subtitleTextView.setText(texts[1]);
+
+            // Set the card background color
+            androidx.cardview.widget.CardView card = cardView.findViewById(R.id.card_view);
+            if (i % 2 == 0) {
+                card.setCardBackgroundColor(getResources().getColor(R.color.orange));
+            } else {
+                card.setCardBackgroundColor(getResources().getColor(R.color.green));
+            }
+
+
+            mRecipeLayout.addView(cardView);
+        }
     }
 
     private void updateProfile() {
