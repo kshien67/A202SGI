@@ -167,6 +167,56 @@ public class ProfileDAO {
         mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
     }
 
+    public void updateUsername(final String newUsername, final SupabaseConnector.VolleyCallback callback) {
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?user_auth_id=eq." + SupabaseConnector.userID;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.PATCH, url,
+                response -> callback.onSuccess(new JSONObject()), error -> callback.onError(error)) {
+            @Override
+            public byte[] getBody() {
+                String requestBody = "{\"username\": \"" + newUsername + "\"}";
+                return requestBody.getBytes();
+            }
+
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
+                headers.put("Content-Type", "application/json");
+                headers.put("Prefer", "return=minimal");
+                return headers;
+            }
+        };
+
+        mSupabaseConnector.getRequestQueue().add(stringRequest);
+    }
+
+    public void updateBio(final String newBio, final SupabaseConnector.VolleyCallback callback) {
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?user_auth_id=eq." + SupabaseConnector.userID;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.PATCH, url,
+                response -> callback.onSuccess(new JSONObject()), error -> callback.onError(error)) {
+            @Override
+            public byte[] getBody() {
+                String requestBody = "{\"bio\": \"" + newBio + "\"}";
+                return requestBody.getBytes();
+            }
+
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
+                headers.put("Content-Type", "application/json");
+                headers.put("Prefer", "return=minimal");
+                return headers;
+            }
+        };
+
+        mSupabaseConnector.getRequestQueue().add(stringRequest);
+    }
+
     public void avatarExists(final SupabaseConnector.VolleyCallback callback) {
         String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/public/avatar/user_" + SupabaseConnector.userID + "_avatar.png";
 

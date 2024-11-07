@@ -1,5 +1,6 @@
 package recipe_saver.inti.myapplication;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.VolleyError;
@@ -103,6 +106,20 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        mEditUsername.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEditDialog("Edit Username", mUsername);
+            }
+        });
+
+        mEditBio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showEditDialog("Edit Bio", mBio);
+            }
+        });
+
         updateProfile();
 
         return v;
@@ -155,5 +172,58 @@ public class ProfileFragment extends Fragment {
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         imagePickerLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+    }
+
+    private void showEditDialog(String title, TextView textView) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(title);
+
+        View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_text, (ViewGroup) getView(), false);
+        final EditText input = viewInflated.findViewById(R.id.edit_text);
+        input.setText(textView.getText().toString());
+
+        builder.setView(viewInflated);
+
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                textView.setText(input.getText().toString());
+                if (textView == mUsername) {
+                    profileDAO.updateUsername(input.getText().toString(), new SupabaseConnector.VolleyCallback() {
+                        @Override
+                        public void onSuccess(JSONObject result) {
+                            Log.d(TAG, "Username updated successfully");
+                        }
+
+                        @Override
+                        public void onError(VolleyError error) {
+                            Log.e(TAG, "Error updating username: " + error.getMessage());
+                        }
+                    });
+                } else if (textView == mBio) {
+                    profileDAO.updateBio(input.getText().toString(), new SupabaseConnector.VolleyCallback() {
+                        @Override
+                        public void onSuccess(JSONObject result) {
+                            Log.d(TAG, "Bio updated successfully");
+                        }
+
+                        @Override
+                        public void onError(VolleyError error) {
+                            Log.e(TAG, "Error updating bio: " + error.getMessage());
+                        }
+                    });
+                }
+            }
+        });
+
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 }
