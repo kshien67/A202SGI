@@ -8,23 +8,23 @@
         android:id="@+id/app_logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:src="@drawable/logo"
         android:contentDescription="App Logo"
-        android:layout_marginBottom="4dp"/>
-    <!-- Changed to default launcher icon -->
+        android:layout_marginBottom="16dp"/>
 
-    <!-- Foodie Text -->
+    <!-- Register Account Text -->
     <TextView
-        android:id="@+id/foodie_text"
+        android:id="@+id/register_account_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/app_logo"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="12dp"
-        android:text="Foodie"
+        android:text="Register Account"
         android:textStyle="bold"
-        android:textSize="40sp"
+        android:textSize="30sp"
+        android:layout_marginBottom="24dp"
         android:textColor="@android:color/holo_orange_dark"/>
 
     <!-- Email EditText -->
@@ -32,7 +32,7 @@
         android:id="@+id/email_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/foodie_text"
+        android:layout_below="@id/register_account_text"
         android:hint="Email Address"
         android:inputType="textEmailAddress"
         android:layout_marginBottom="16dp"/>
@@ -45,37 +45,36 @@
         android:layout_below="@id/email_edit_text"
         android:hint="Password"
         android:inputType="textPassword"
-        android:layout_marginBottom="24dp"/>
+        android:layout_marginBottom="16dp"/>
 
-    <!-- Login Button -->
-    <Button
-        android:id="@+id/login_button"
+    <!-- Confirm Password EditText -->
+    <EditText
+        android:id="@+id/confirm_password_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/password_edit_text"
-        android:text="Login"
+        android:hint="Confirm Password"
+        android:inputType="textPassword"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Sign Up Button -->
+    <Button
+        android:id="@+id/signup_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/confirm_password_edit_text"
+        android:text="Sign Up"
         android:textColor="@android:color/white"/>
 
-    <!-- Register Link -->
-    <TextView
-        android:id="@+id/register_link"
+    <!-- Login Link -->
+    <Button
+        android:id="@+id/login_link"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/login_button"
+        android:layout_below="@id/signup_button"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:text="Don't have an account? Register here"
+        android:text="Already have an account? Log in here"
         android:textStyle="bold"/>
-
-    <!-- Forgot Password Link -->
-    <TextView
-        android:id="@+id/forgot_password_link"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/register_link"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:text="Forgot Password?"
-        android:textStyle="bold" />
 
 </RelativeLayout>
