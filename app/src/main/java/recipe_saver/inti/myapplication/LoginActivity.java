@@ -12,9 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.VolleyError;
 import org.json.JSONObject;
 
-import recipe_saver.inti.myapplication.connector.ForgetPasswordActivity;
 import recipe_saver.inti.myapplication.connector.LoginDAO;
-import recipe_saver.inti.myapplication.connector.SignUpActivity;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
 
 public class LoginActivity extends AppCompatActivity {
