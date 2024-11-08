@@ -3,6 +3,7 @@
     <string name="settings">Settings</string>
     <string name="logout">Log Out</string>
     <string name="reset_password">Reset Password</string>
+    <string name="ranking_title">Best Recipe of the Week</string>
 
     <string-array name="cuisine_array">
         <item>Chinese</item>
