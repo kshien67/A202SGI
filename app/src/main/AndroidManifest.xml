@@ -7,7 +7,6 @@
 
     <application
         android:name=".RecipeApplication"
-        android:enableOnBackInvokedCallback="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -20,8 +19,27 @@
 
         <activity android:name=".LoginActivity" />
         <activity android:name=".HomeActivity" />
+        <activity android:name=".connector.SignUpActivity" />
         <activity android:name=".ProfileFragment" />
         <activity android:name=".AddRecipeActivity" />
+        <activity android:name=".connector.ForgetPasswordActivity" />
+        <activity
+            android:name=".UnitConverter"
+            android:exported="true" />
+
+        <activity
+            android:name=".connector.ResetPasswordActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="myapp"
+                    android:host="reset-password" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
