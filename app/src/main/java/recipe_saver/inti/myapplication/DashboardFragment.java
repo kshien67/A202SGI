@@ -1,6 +1,8 @@
 package recipe_saver.inti.myapplication;
 
 import android.content.Intent;
+import android.util.Log;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +12,16 @@ import android.widget.ImageButton;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.android.volley.VolleyError;
+
+import recipe_saver.inti.myapplication.connector.DashboardDAO;
+import recipe_saver.inti.myapplication.connector.SupabaseConnector;
+
 
 public class DashboardFragment extends Fragment {
 
+    private static final String TAG = "DashboardFragment";
+    private final DashboardDAO mDashboardDAO = new DashboardDAO(SupabaseConnector.getInstance(getContext()));
     private ImageButton mProfileButton;
 
     @Override
@@ -36,6 +45,22 @@ public class DashboardFragment extends Fragment {
             }
         });
 
+        updateDashboard();
         return v;
+    }
+
+    private void updateDashboard() {
+        mDashboardDAO.fetchAvatar(new DashboardDAO.ImageCallback() {
+            @Override
+            public void onSuccess(Bitmap result) {
+                mProfileButton.setImageBitmap(result);
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+                Log.e(TAG, "Error fetching avatar: " + error.getMessage());
+            }
+
+        });
     }
 }

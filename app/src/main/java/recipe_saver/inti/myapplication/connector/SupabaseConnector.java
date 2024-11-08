@@ -5,6 +5,8 @@ import android.content.Context;
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class SupabaseConnector {
@@ -18,7 +20,7 @@ public class SupabaseConnector {
     protected static String userAuthID = null;
 
     protected SupabaseConnector(Context context) {
-        ctx = context;
+        ctx = context.getApplicationContext();
         requestQueue = getRequestQueue();
     }
 
