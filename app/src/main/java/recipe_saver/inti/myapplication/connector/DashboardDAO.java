@@ -1,6 +1,7 @@
 package recipe_saver.inti.myapplication.connector;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -19,7 +20,8 @@ public class DashboardDAO {
     }
 
     public void fetchAvatar(final DashboardDAO.ImageCallback callback) {
-        String url = mSupabaseConnector.SUPABASE_URL + "/storage/v1/object/avatar/user_" + mSupabaseConnector.userID + "_avatar.png";
+        Log.d(TAG, "Fetching avatar " + mSupabaseConnector.userID + mSupabaseConnector.userAuthID);
+        String url = mSupabaseConnector.SUPABASE_URL + "/storage/v1/object/avatar/user_" + mSupabaseConnector.userAuthID + "_avatar.png";
 
         ImageRequest imageRequest = new ImageRequest(url,
                 new Response.Listener<Bitmap>() {
