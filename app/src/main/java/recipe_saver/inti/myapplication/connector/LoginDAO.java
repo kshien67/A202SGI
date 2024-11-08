@@ -9,9 +9,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,18 +83,15 @@ public class LoginDAO extends SupabaseConnector {
         }
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, jsonBody,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            accessToken = response.getString("access_token");
-                            JSONObject user = response.getJSONObject("user");
-                            userAuthID = user.getString("id");
-                            fetchUserID();
-                            callback.onSuccess(response);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                response -> {
+                    try {
+                        accessToken = response.getString("access_token");
+                        JSONObject user = response.getJSONObject("user");
+                        userAuthID = user.getString("id");
+                        fetchUserID();
+                        callback.onSuccess(response);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -112,35 +111,32 @@ public class LoginDAO extends SupabaseConnector {
         getRequestQueue().add(jsonObjectRequest);
     }
 
-    public void logout(String userToken, final VolleyCallback callback) {
+    public void logout(final NoResponseCallback callback) {
         String url = SUPABASE_URL + "/auth/v1/logout";
+        Log.d(TAG, "logout: " + userAuthID);
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        accessToken = null;
-                        userAuthID = null;
-                        userID = null;
-                        callback.onSuccess(response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                callback.onError(error);
-            }
-        }) {
+        StringRequest stringObjectRequest= new StringRequest(Request.Method.POST, url,
+                response -> {
+                    accessToken = null;
+                    userAuthID = null;
+                    userID = null;
+                    callback.onSuccess();
+                },
+                error -> {
+                    Log.e(TAG, "Error logging out: " + error.getMessage());
+                    callback.onError(error);
+                }) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", SUPABASE_KEY);
                 headers.put("Content-Type", "application/json");
-                headers.put("Authorization", "Bearer " + userToken);
+                headers.put("Authorization", "Bearer " + accessToken);
                 return headers;
             }
         };
 
-        getRequestQueue().add(jsonObjectRequest);
+        getRequestQueue().add(stringObjectRequest);
     }
 
     private void fetchUserID() {
@@ -254,4 +250,39 @@ public class LoginDAO extends SupabaseConnector {
         getRequestQueue().add(jsonObjectRequest);
     }
 
+    public void resetPassword(final String newPassword, final VolleyCallback callback) {
+        String url = SUPABASE_URL + "/auth/v1/user";
+        Log.d(TAG, "resetPassword: " + userAuthID);
+
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("password", newPassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.PUT,
+                url,
+                jsonBody,
+                callback::onSuccess,
+                callback::onError) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + accessToken); // Ensure valid token is provided here
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        getRequestQueue().add(jsonObjectRequest);
+    }
+
+    public interface NoResponseCallback {
+        void onSuccess();
+
+        void onError(VolleyError error);
+    }
 }

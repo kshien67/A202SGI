@@ -28,7 +28,7 @@ public class ProfileDAO {
     }
 
     public void upsertAvatar(final Bitmap bitmap, final SupabaseConnector.VolleyCallback callback) {
-        String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/avatar/user_" + SupabaseConnector.userID + "_avatar.png";
+        String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/avatar/user_" + SupabaseConnector.userAuthID + "_avatar.png";
 
         // Convert Bitmap to byte array
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -62,8 +62,8 @@ public class ProfileDAO {
                     @Override
                     public Map<String, String> getHeaders() {
                         Map<String, String> headers = new HashMap<>();
-                        headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
-                        headers.put("Authorization", "Bearer " + mSupabaseConnector.accessToken);
+                        headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                        headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
                         headers.put("Content-Type", "image/jpeg");
                         return headers;
                     }
@@ -97,8 +97,8 @@ public class ProfileDAO {
                     @Override
                     public Map<String, String> getHeaders() {
                         Map<String, String> headers = new HashMap<>();
-                        headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
-                        headers.put("Authorization", "Bearer " + mSupabaseConnector.accessToken);
+                        headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                        headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
                         headers.put("Content-Type", "image/jpeg");
                         return headers;
                     }
@@ -110,7 +110,7 @@ public class ProfileDAO {
     }
 
     public void fetchAvatar(final ImageCallback callback) {
-        String url = mSupabaseConnector.SUPABASE_URL + "/storage/v1/object/avatar/user_" + mSupabaseConnector.userID + "_avatar.png";
+        String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/avatar/user_" + mSupabaseConnector.userAuthID + "_avatar.png";
 
         ImageRequest imageRequest = new ImageRequest(url,
                 new Response.Listener<Bitmap>() {
@@ -138,16 +138,11 @@ public class ProfileDAO {
     }
 
     public void fetchUserProfile(final VolleyCallback callback) {
-        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?select=username,bio";
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?select=username,bio&user_auth_id=eq." + SupabaseConnector.userAuthID;
         Log.d(TAG, "Fetch User Profile URL: " + url);
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        callback.onSuccess(response);
-                    }
-                }, new Response.ErrorListener() {
+                callback::onSuccess, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, "Fetch User Profile Error: " + error.getMessage());
@@ -157,8 +152,8 @@ public class ProfileDAO {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "BEARER " + mSupabaseConnector.SUPABASE_KEY);
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "BEARER " + SupabaseConnector.accessToken);
                 return headers;
             }
         };
@@ -167,9 +162,9 @@ public class ProfileDAO {
     }
 
     public void fetchUserDetails(final UserDetailsCallback callback) {
-        String urlRecipesCreated = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe?select=recipe_id,user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userID;
-        String urlRecipesLiked = SupabaseConnector.SUPABASE_URL + "/rest/v1/userrecipeaction?select=user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userID + "&action_type=eq.Like";
-        String urlRecipesCollected = SupabaseConnector.SUPABASE_URL + "/rest/v1/userrecipeaction?select=user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userID + "&action_type=eq.Collect";
+        String urlRecipesCreated = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe?select=recipe_id,user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userAuthID;
+        String urlRecipesLiked = SupabaseConnector.SUPABASE_URL + "/rest/v1/userrecipeaction?select=user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userAuthID + "&action_type=eq.Like";
+        String urlRecipesCollected = SupabaseConnector.SUPABASE_URL + "/rest/v1/userrecipeaction?select=user:user_id(user_auth_id)&user.user_auth_id=eq." + SupabaseConnector.userAuthID + "&action_type=eq.Collect";
 
         JsonArrayRequest recipesCreatedRequest = new JsonArrayRequest(Request.Method.GET, urlRecipesCreated, null,
                 response -> {
@@ -182,8 +177,8 @@ public class ProfileDAO {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "BEARER " + mSupabaseConnector.SUPABASE_KEY);
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "BEARER " + SupabaseConnector.accessToken);
                 return headers;
             }
         };
@@ -199,8 +194,8 @@ public class ProfileDAO {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "BEARER " + mSupabaseConnector.SUPABASE_KEY);
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "BEARER " + SupabaseConnector.accessToken);
                 return headers;
             }
         };
@@ -216,8 +211,8 @@ public class ProfileDAO {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", mSupabaseConnector.SUPABASE_KEY);
-                headers.put("Authorization", "BEARER " + mSupabaseConnector.SUPABASE_KEY);
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "BEARER " + SupabaseConnector.accessToken);
                 return headers;
             }
         };
@@ -228,10 +223,10 @@ public class ProfileDAO {
     }
 
     public void updateUsername(final String newUsername, final SupabaseConnector.VolleyCallback callback) {
-        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?user_auth_id=eq." + SupabaseConnector.userID;
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?user_auth_id=eq." + SupabaseConnector.userAuthID;
 
         StringRequest stringRequest = new StringRequest(Request.Method.PATCH, url,
-                response -> callback.onSuccess(new JSONObject()), error -> callback.onError(error)) {
+                response -> callback.onSuccess(new JSONObject()), callback::onError) {
             @Override
             public byte[] getBody() {
                 String requestBody = "{\"username\": \"" + newUsername + "\"}";
@@ -253,10 +248,10 @@ public class ProfileDAO {
     }
 
     public void updateBio(final String newBio, final SupabaseConnector.VolleyCallback callback) {
-        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?user_auth_id=eq." + SupabaseConnector.userID;
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/users?user_auth_id=eq." + SupabaseConnector.userAuthID;
 
         StringRequest stringRequest = new StringRequest(Request.Method.PATCH, url,
-                response -> callback.onSuccess(new JSONObject()), error -> callback.onError(error)) {
+                response -> callback.onSuccess(new JSONObject()), callback::onError) {
             @Override
             public byte[] getBody() {
                 String requestBody = "{\"bio\": \"" + newBio + "\"}";
@@ -278,20 +273,10 @@ public class ProfileDAO {
     }
 
     public void avatarExists(final SupabaseConnector.VolleyCallback callback) {
-        String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/public/avatar/user_" + SupabaseConnector.userID + "_avatar.png";
+        String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/public/avatar/user_" + SupabaseConnector.userAuthID + "_avatar.png";
 
         StringRequest stringRequest = new StringRequest(Request.Method.HEAD, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        callback.onSuccess(new JSONObject());
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                callback.onError(error);
-            }
-        }) {
+                response -> callback.onSuccess(new JSONObject()), error -> callback.onError(error)) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
