@@ -1,14 +1,19 @@
 package recipe_saver.inti.myapplication;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ImageButton;
@@ -25,24 +30,32 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.android.volley.VolleyError;
 
-
-
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import recipe_saver.inti.myapplication.connector.RecipeDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
+import recipe_saver.inti.myapplication.interfaces.IngredientImpl;
+import recipe_saver.inti.myapplication.interfaces.MeasurementUnitImpl;
 import recipe_saver.inti.myapplication.interfaces.Recipe;
 import recipe_saver.inti.myapplication.interfaces.RecipeImpl;
+import recipe_saver.inti.myapplication.interfaces.EditTextCursorWatcher;
+import recipe_saver.inti.myapplication.interfaces.MeasurementUnit;
 
 public class AddRecipeFragment extends Fragment {
-    private EditText mRecipeNameEditText, mDescriptionBox, mInstructionsBox;
+    private final static String TAG = "AddRecipeFragment";
+    private List<IngredientImpl> mIngredients;
+
+    private EditText mRecipeNameEditText, mDescriptionBox;
+    private EditTextCursorWatcher mInstructionsBox;
     private Spinner mCuisineDropdown, mDifficultyDropdown;
     private final RecipeDAO mRecipeDAO = new RecipeDAO(SupabaseConnector.getInstance(getContext()));
     private ActivityResultLauncher<Intent> imagePickerLauncher;
-
     private SeekBar mTimeNeededSlider;
     private TextView mTimeNeededValue;
     private SeekBar mServingsSlider;
@@ -73,6 +86,7 @@ public class AddRecipeFragment extends Fragment {
         );
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_recipe, container, false);
@@ -125,6 +139,29 @@ public class AddRecipeFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
+        mInstructionsBox.setOnSelectionChangedListener((selStart, selEnd, firstPipe, secondPipe, end_index) -> {
+            if (selEnd>=2 && selEnd <=secondPipe && selEnd > firstPipe) {
+                showDropdown(mInstructionsBox, selEnd, "units");
+            } else if (selEnd>secondPipe && selEnd <end_index) {
+                Log.d(TAG, "Ingredient Popup: " + selEnd);
+                showDropdown(mInstructionsBox, selEnd, "ingredients");
+            }
+        });
+
+        mRecipeDAO.fetchAllIngredients(new RecipeDAO.IngredientCallback() {
+            @Override
+            public void onSuccess(List<IngredientImpl> ingredients) {
+                Log.d(TAG, "Fetched ingredients successfully");
+                Log.d(TAG, "Ingredients: " + ingredients);
+                mIngredients = ingredients;
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+                Log.e(TAG, "Failed to fetch ingredients", error);
+            }
+        });
+
         // Set the save button's onClickListener
         mSaveButton.setOnClickListener(v -> {
             // Collect data from UI elements
@@ -144,9 +181,8 @@ public class AddRecipeFragment extends Fragment {
             }
 
             // Parse ingredients and quantities from instructions
-            ArrayList<String> ingredientList = new ArrayList<>();
-            ArrayList<String> quantityList = new ArrayList<>();
-            parseIngredientsAndQuantities(instructions, ingredientList, quantityList);
+            List<List<Object>> recipeIngredients = parseIngredientsAndQuantities();
+            Log.d(TAG, "Recipe ingredients: " + recipeIngredients);
 
             // Create a Recipe object
             Recipe recipe = new RecipeImpl(
@@ -160,8 +196,8 @@ public class AddRecipeFragment extends Fragment {
                     instructions
             );
 
-            // Use mRecipeDAO.addRecipe and pass the required parameters
-            mRecipeDAO.addRecipe(recipe, ingredientList, quantityList, new RecipeDAO.FetchCallback() {
+
+            mRecipeDAO.addRecipe(recipe, recipeIngredients,new RecipeDAO.FetchCallback() {
                 @Override
                 public void onSuccess() {
                     // Handle success
@@ -180,7 +216,6 @@ public class AddRecipeFragment extends Fragment {
                     Log.e("AddRecipeFragment", "Failed to save recipe", error);
                 }
             });
-
         });
 
         return view;
@@ -194,37 +229,85 @@ public class AddRecipeFragment extends Fragment {
     }
 
     // Parse ingredients and quantities from the instructions
-    private void parseIngredientsAndQuantities(String instructions, ArrayList<String> ingredientList, ArrayList<String> quantityList) {
-        Pattern pattern = Pattern.compile("\\[(\\d+\\s?(g|kg|mg|ton|tons|kilogram|milligram)?)\\[([a-zA-Z\\s]+)\\]]");
+    private List<List<Object>> parseIngredientsAndQuantities() {
+        String instructions = mInstructionsBox.getText().toString();
+        List<List<Object>> result = new ArrayList<>();
+        Pattern pattern = Pattern.compile("\\[\\[(\\d+(\\.\\d+)?)\\|(\\w+)\\|(.*?)\\]\\]");
         Matcher matcher = pattern.matcher(instructions);
 
         while (matcher.find()) {
-            String quantity = matcher.group(1).trim();
-            String unit = matcher.group(2);
-            String ingredient = matcher.group(3).trim();
+            String quantityStr = matcher.group(1);
+            String unit = matcher.group(3);
+            String ingredientName = matcher.group(4);
 
-            // Convert all units to grams
-            double quantityInGrams = convertToGrams(quantity, unit);
+            // Validate quantity
+            double quantity;
+            try {
+                quantity = Double.parseDouble(quantityStr);
+            } catch (NumberFormatException e) {
+                continue; // Skip invalid quantity
+            }
 
-            ingredientList.add(ingredient);
-            quantityList.add(String.valueOf(quantityInGrams));
+            // Validate unit
+            if (!Arrays.asList(MeasurementUnit.getUnits()).contains(unit)) {
+                continue; // Skip invalid unit
+            }
+
+            // Validate ingredient
+            IngredientImpl ingredient = null;
+            for (IngredientImpl ing : mIngredients) {
+                if (ing.getIngredient_name().equalsIgnoreCase(ingredientName)) {
+                    ingredient = ing;
+                    break;
+                }
+            }
+            if (ingredient == null) {
+                continue; // Skip invalid ingredient
+            }
+
+            // Create MeasurementUnit
+            MeasurementUnit measurementUnit = new MeasurementUnitImpl(quantity, unit);
+
+            // Add to result list
+            List<Object> entry = new ArrayList<>();
+            entry.add(ingredient.getIngredient_id());
+            entry.add(measurementUnit.toGrams());
+            entry.add(measurementUnit.getDefaultUnit());
+            result.add(entry);
         }
+        return result;
     }
 
-    private double convertToGrams(String quantity, String unit) {
-        double value = Double.parseDouble(quantity.replaceAll("[^\\d.]", ""));
-        switch (unit.toLowerCase()) {
-            case "kg":
-            case "kilogram":
-                return value * 1000;
-            case "mg":
-            case "milligram":
-                return value / 1000;
-            case "ton":
-            case "tons":
-                return value * 1_000_000;
-            default: // Assume grams if no conversion needed
-                return value;
+    private void showDropdown(View anchor, int position, String type) {
+        List<String> options = new ArrayList<>();
+        if (type.equals("units")) {
+            Log.d(TAG, "showDropdown: units");
+            Log.d(TAG, "showDropdown: " + MeasurementUnit.getUnits());
+            Collections.addAll(options, MeasurementUnit.getUnits());
+        } else if (type.equals("ingredients")) {
+            for (IngredientImpl ingredient : mIngredients) {
+                Log.d(TAG, "showDropdown: " + ingredient.getIngredient_name());
+                options.add(ingredient.getIngredient_name());
+            }
         }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, options);
+        ListView listView = new ListView(getContext());
+        listView.setAdapter(adapter);
+
+        PopupWindow popupWindow = new PopupWindow(listView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        popupWindow.setFocusable(true);
+        popupWindow.setOutsideTouchable(true);
+
+        listView.setOnItemClickListener((parent, view, position1, id) -> {
+            String selectedItem = options.get(position1);
+            Editable text = mInstructionsBox.getText();
+            int start = Math.min(mInstructionsBox.getSelectionStart(), mInstructionsBox.getSelectionEnd());
+            int end = Math.max(mInstructionsBox.getSelectionStart(), mInstructionsBox.getSelectionEnd());
+            text.replace(start, end, selectedItem);
+            popupWindow.dismiss();
+        });
+
+        popupWindow.showAsDropDown(anchor, 0, 0);
     }
 }
