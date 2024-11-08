@@ -19,16 +19,11 @@
 
         <activity android:name=".LoginActivity" />
         <activity android:name=".HomeActivity" />
-        <activity android:name=".connector.SignUpActivity" />
+        <activity android:name=".SignUpActivity" />
         <activity android:name=".ProfileFragment" />
-        <activity android:name=".AddRecipeActivity" />
-        <activity android:name=".connector.ForgetPasswordActivity" />
+        <activity android:name=".ForgetPasswordActivity" />
         <activity
-            android:name=".UnitConverter"
-            android:exported="true" />
-
-        <activity
-            android:name=".connector.ResetPasswordActivity"
+            android:name=".ResetPasswordActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
