@@ -162,7 +162,7 @@
             android:layout_marginEnd="16dp" />
 
         <!-- Instructions Box -->
-        <EditText
+        <recipe_saver.inti.myapplication.interfaces.EditTextCursorWatcher
             android:id="@+id/instructions_box"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
