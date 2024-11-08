@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.android.volley.VolleyError;
+import com.google.android.material.imageview.ShapeableImageView;
 
 import recipe_saver.inti.myapplication.connector.DashboardDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
@@ -22,7 +23,7 @@ public class DashboardFragment extends Fragment {
 
     private static final String TAG = "DashboardFragment";
     private final DashboardDAO mDashboardDAO = new DashboardDAO(SupabaseConnector.getInstance(getContext()));
-    private ImageButton mProfileButton;
+    private ShapeableImageView mProfileButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
