@@ -47,6 +47,7 @@ public class RecipeDAO {
             jsonBody.put("servings", recipe.getServings());
             jsonBody.put("difficulty", recipe.getDifficulty());
             jsonBody.put("image", bitmapToBase64(recipe.getImage()));
+            jsonBody.put("instructions", recipe.getInstructions());
         } catch (JSONException e) {
             e.printStackTrace();
         }
