@@ -29,43 +29,53 @@ public class RankingDAO extends SupabaseConnector {
         String url = SUPABASE_URL + "/rest/v1/RPC";  // Ensure correct endpoint for RPC query
 
         // Request to fetch the top-ranked recipes
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST, url, new JSONObject().put("query", query),
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            // Safely access the data
-                            if (response.has("data")) {
-                                JSONArray data = response.getJSONArray("data");
-                                callback.onSuccess(data);
-                            } else {
-                                callback.onError(new VolleyError("Data not found"));
-                            }
-                        } catch (JSONException e) {
-                            // Log the error and pass it to the callback
-                            e.printStackTrace();
-                            callback.onError(new VolleyError("Error parsing JSON response: " + e.getMessage()));
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // Handle errors like connection issues, etc.
-                        callback.onError(error);
-                    }
-                }) {
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", SUPABASE_KEY);
-                headers.put("Authorization", "Bearer " + accessToken);
-                return headers;
-            }
-        };
+        try {
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("query", query); // This could throw JSONException
 
-        getRequestQueue().add(request);
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.POST, url, requestBody,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                // Safely access the data
+                                if (response.has("data")) {
+                                    JSONArray data = response.getJSONArray("data");
+                                    callback.onSuccess(data);
+                                } else {
+                                    callback.onError(new VolleyError("Data not found"));
+                                }
+                            } catch (JSONException e) {
+                                // Log the error and pass it to the callback
+                                e.printStackTrace();
+                                callback.onError(new VolleyError("Error parsing JSON response: " + e.getMessage()));
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            // Handle errors like connection issues, etc.
+                            callback.onError(error);
+                        }
+                    }) {
+                @Override
+                public Map<String, String> getHeaders() {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("apikey", SUPABASE_KEY);
+                    headers.put("Authorization", "Bearer " + accessToken);
+                    return headers;
+                }
+            };
+
+            getRequestQueue().add(request);
+
+        } catch (JSONException e) {
+            // Handle JSON exception if the request body is invalid
+            e.printStackTrace();
+            callback.onError(new VolleyError("Error creating JSON object: " + e.getMessage()));
+        }
     }
 
     // Define the ArrayCallback interface (non-public if it's an inner class)
