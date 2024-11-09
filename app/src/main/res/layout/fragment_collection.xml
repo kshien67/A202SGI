@@ -33,7 +33,7 @@
                 android:id="@+id/recipe_grid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="48px"
+                android:layout_marginTop="0dp"
                 android:columnCount="2"
                 android:orientation="horizontal"
                 android:padding="16dp"
