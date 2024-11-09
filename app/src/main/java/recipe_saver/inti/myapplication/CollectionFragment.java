@@ -66,7 +66,7 @@ public class CollectionFragment extends Fragment {
     }
 
     private void populateCards(JSONArray recipes) {
-        LayoutInflater inflater = LayoutInflater.from(getContext());
+        LayoutInflater inflater = LayoutInflater.from(requireActivity());
         for (int i = 0; i < recipes.length(); i++) {
             try {
                 View cardView = inflater.inflate(R.layout.card_recipe, mGridLayout, false);
