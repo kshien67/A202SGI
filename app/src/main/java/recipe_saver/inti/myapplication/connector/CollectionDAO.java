@@ -42,12 +42,9 @@ public class CollectionDAO {
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.POST, url, jsonBody,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray jsonArray) {
-                        Log.d(TAG, "Collected recipes: " + jsonArray.toString());
-                        callback.onSuccess(jsonArray);
-                    }
+                jsonArray -> {
+                    Log.d(TAG, "Collected recipes: " + jsonArray.toString());
+                    callback.onSuccess(jsonArray);
                 },
                 error -> {
                     Log.e(TAG, "Error: " + error.toString());

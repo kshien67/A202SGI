@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -66,45 +67,22 @@ public class CollectionFragment extends Fragment {
 
     private void populateCards(JSONArray recipes) {
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        JSONArray test = new JSONArray(Arrays.asList(
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 1")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 2")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 3")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 4")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 5")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 6")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 7")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 8")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 9")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 10")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 11")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 12")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 13")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 14")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 15")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 16")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 17")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 18")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 19")),
-                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 20"))
-                )
-        );
         for (int i = 0; i < recipes.length(); i++) {
             try {
                 View cardView = inflater.inflate(R.layout.card_recipe, mGridLayout, false);
                 TextView title = cardView.findViewById(R.id.recipe_name);
                 TextView likes = cardView.findViewById(R.id.recipe_likes);
-                ImageView image = cardView.findViewById(R.id.recipe_image);
+                ImageButton image = cardView.findViewById(R.id.recipe_image);
+
 
                 title.setText(recipes.getJSONObject(i).getString("recipe_name"));
                 likes.setText(recipes.getJSONObject(i).getString("like_count"));
 
+                String recipeId = recipes.getJSONObject(i).getString("recipe_id");
                 String url = recipes.getJSONObject(i).getString("image");
                 mCollectionDAO.fetchRecipeImage(url, new CollectionDAO.ImageCallback() {
                     @Override
-                    public void onSuccess(Bitmap bitmap) {
-                        image.setImageBitmap(bitmap);
-                    }
+                    public void onSuccess(Bitmap bitmap) {image.setImageBitmap(bitmap);}
 
                     @Override
                     public void onError(VolleyError error) {
@@ -114,6 +92,19 @@ public class CollectionFragment extends Fragment {
                             Log.e(TAG, "Response Data: " + new String(error.networkResponse.data));
                         }
                     }
+                });
+
+                image.setOnClickListener(v -> {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("recipe_id", recipeId);
+
+                    RecipeFragment recipeFragment = new RecipeFragment();
+                    recipeFragment.setArguments(bundle);
+
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, recipeFragment)
+                            .addToBackStack(null)
+                            .commit();
                 });
 
                 //Log.d(TAG, "Added card: " + cardView.toString());

@@ -21,6 +21,7 @@
     <string name="instructions">Instructions</string>
     <string name="save">SAVE</string>
     <string name="collection_title">My Recipes</string>
+    <string name="lorem_ipsum">Lorem Ipsum</string>
 
     <!-- Arrays -->
     <string-array name="cuisine_array">
