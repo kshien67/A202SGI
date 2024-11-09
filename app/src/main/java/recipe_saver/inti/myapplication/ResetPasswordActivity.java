@@ -1,4 +1,4 @@
-package recipe_saver.inti.myapplication.connector;
+package recipe_saver.inti.myapplication;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,8 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.VolleyError;
 import org.json.JSONObject;
 
-import recipe_saver.inti.myapplication.LoginActivity;
-import recipe_saver.inti.myapplication.R;
+import recipe_saver.inti.myapplication.connector.LoginDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
 public class ResetPasswordActivity extends AppCompatActivity {
 

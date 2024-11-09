@@ -45,7 +45,7 @@ public class MeasurementUnitImpl implements MeasurementUnit {
     }
 
     static String[] getUnits() {
-        return new String[] {"g", "kg", "lb", "oz", "ml", "l", "tbsp", "tsp", "cup"};
+        return new String[] {"g", "kg", "lb", "oz", "ml", "l", "tbsp", "tsp", "cup", "pcs"};
     }
 
     private double toGrams(double value, String unit) {

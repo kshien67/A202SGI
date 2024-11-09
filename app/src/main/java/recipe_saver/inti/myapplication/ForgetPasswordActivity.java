@@ -1,4 +1,4 @@
-package recipe_saver.inti.myapplication.connector;
+package recipe_saver.inti.myapplication;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.VolleyError;
 import org.json.JSONObject;
 
-import recipe_saver.inti.myapplication.R;
 import recipe_saver.inti.myapplication.connector.LoginDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
 

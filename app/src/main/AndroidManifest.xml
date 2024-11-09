@@ -9,6 +9,7 @@
         android:name=".RecipeApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -19,16 +20,11 @@
 
         <activity android:name=".LoginActivity" />
         <activity android:name=".HomeActivity" />
-        <activity android:name=".connector.SignUpActivity" />
+        <activity android:name=".SignUpActivity" />
         <activity android:name=".ProfileFragment" />
-        <activity android:name=".AddRecipeActivity" />
-        <activity android:name=".connector.ForgetPasswordActivity" />
+        <activity android:name=".ForgetPasswordActivity" />
         <activity
-            android:name=".UnitConverter"
-            android:exported="true" />
-
-        <activity
-            android:name=".connector.ResetPasswordActivity"
+            android:name=".ResetPasswordActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

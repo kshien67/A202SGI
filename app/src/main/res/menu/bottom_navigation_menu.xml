@@ -8,20 +8,18 @@
     <item
         android:id="@+id/navigation_ranking"
         android:title="Ranking"
-        android:icon="@drawable/ic_ranking" />
+        android:icon="@drawable/ic_ranking_selector"/>
 
     <item
         android:id="@+id/navigation_add"
         android:title="Add Recipe"
-        android:icon="@drawable/ic_add_recipe" />
-
+        android:icon="@drawable/ic_add"/>
     <item
         android:id="@+id/navigation_collection"
-        android:title="Profile"
-        android:icon="@drawable/ic_collection" />
-
+        android:title="Collection"
+        android:icon="@drawable/ic_collection_selector"/>
     <item
         android:id="@+id/navigation_settings"
         android:title="Settings"
-        android:icon="@drawable/ic_settings" />
+        android:icon="@drawable/ic_settings_selector"/>
 </menu>

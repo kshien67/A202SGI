@@ -8,11 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.android.volley.VolleyError;
+import com.google.android.material.imageview.ShapeableImageView;
 
 import recipe_saver.inti.myapplication.connector.DashboardDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
@@ -22,7 +24,8 @@ public class DashboardFragment extends Fragment {
 
     private static final String TAG = "DashboardFragment";
     private final DashboardDAO mDashboardDAO = new DashboardDAO(SupabaseConnector.getInstance(getContext()));
-    private ImageButton mProfileButton;
+    private ShapeableImageView mProfileButton;
+    private TextView mUsername;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,7 @@ public class DashboardFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_dashboard, container, false);
 
         mProfileButton = v.findViewById(R.id.dashboard_pfp);
+        mUsername = v.findViewById(R.id.dashboard_username);
 
         mProfileButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,7 +64,18 @@ public class DashboardFragment extends Fragment {
             public void onError(VolleyError error) {
                 Log.e(TAG, "Error fetching avatar: " + error.getMessage());
             }
+        });
 
+        mDashboardDAO.fetchUsername(new DashboardDAO.StringCallback() {
+            @Override
+            public void onSuccess(String result) {
+                mUsername.setText(result);
+            }
+
+            @Override
+            public void onError(VolleyError error) {
+                Log.e(TAG, "Error fetching username: " + error.getMessage());
+            }
         });
     }
 }
