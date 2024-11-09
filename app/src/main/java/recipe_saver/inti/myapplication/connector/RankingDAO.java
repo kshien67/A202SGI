@@ -16,7 +16,7 @@ public class RankingDAO extends SupabaseConnector {
     }
 
     // Method to fetch top-ranked recipes
-    public void getTopRankedRecipes(final VolleyCallback callback) {
+    public void getTopRankedRecipes(final ArrayCallback callback) {
         String url = SUPABASE_URL + "/rest/v1/RecipeRanking";
 
         JsonArrayRequest request = new JsonArrayRequest(
@@ -44,5 +44,11 @@ public class RankingDAO extends SupabaseConnector {
         };
 
         getRequestQueue().add(request);
+    }
+
+    // Define the ArrayCallback interface
+    public interface ArrayCallback {
+        void onSuccess(JSONArray response);
+        void onError(VolleyError error);
     }
 }
