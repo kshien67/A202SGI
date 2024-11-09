@@ -2,13 +2,19 @@ package recipe_saver.inti.myapplication.connector;
 
 import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.ImageView;
 
+import androidx.annotation.Nullable;
+
+import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonArrayRequest;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,6 +86,57 @@ public class DashboardDAO {
         mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
     }
 
+    public void fetchDashboardRecipes(@Nullable String cuisine, ArrayCallback callback) {
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/rpc/get_dashboard_recipes";
+
+        JSONArray jsonBody = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        try {
+            if (cuisine != null) {
+                jsonObject.put("cuisine_type", cuisine);
+            } else {
+                jsonObject.put("cuisine_type", JSONObject.NULL);
+            }
+            jsonBody.put(jsonObject);
+        } catch (JSONException e) {
+            callback.onError(new VolleyError("JSON error: " + e.getMessage()));
+            return;
+        }
+        Log.d(TAG, "Request Body: " + jsonBody.toString());
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                Request.Method.POST,
+                url,
+                jsonBody,
+                callback::onSuccess,
+                callback::onError) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
+    }
+
+    public void fetchRecipeImage(String url, ImageCallback callback) {
+        ImageRequest imageRequest = new ImageRequest(
+                url,
+                callback::onSuccess,
+                0,
+                0,
+                ImageView.ScaleType.CENTER_CROP,
+                Bitmap.Config.RGB_565,
+                callback::onError
+        );
+
+        mSupabaseConnector.getRequestQueue().add(imageRequest);
+    }
+
     public interface ImageCallback {
         void onSuccess(Bitmap result);
 
@@ -88,6 +145,11 @@ public class DashboardDAO {
 
     public interface StringCallback {
         void onSuccess(String result);
+        void onError(VolleyError error);
+    }
+
+    public interface ArrayCallback {
+        void onSuccess(JSONArray response);
         void onError(VolleyError error);
     }
 }
