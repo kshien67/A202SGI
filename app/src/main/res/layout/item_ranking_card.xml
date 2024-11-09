@@ -22,6 +22,7 @@
             android:layout_marginEnd="16dp"
             android:contentDescription="@string/recipe_image" />
 
+
         <!-- Recipe Details -->
         <LinearLayout
             android:layout_width="0dp"

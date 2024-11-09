@@ -1,4 +1,5 @@
 <resources>
+    <!-- App Name -->
     <string name="app_name">Recipe Saver</string>
 
     <!-- Placeholders for SeekBar Values -->
@@ -16,6 +17,9 @@
     <string name="difficulty">Difficulty</string>
     <string name="instructions">Instructions</string>
     <string name="save">SAVE</string>
+
+    <!-- Content Description for Recipe Image -->
+    <string name="recipe_image">Recipe Image</string>
 
     <!-- Arrays -->
     <string-array name="cuisine_array">
