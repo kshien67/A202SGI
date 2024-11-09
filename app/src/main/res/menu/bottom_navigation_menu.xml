@@ -4,6 +4,7 @@
         android:id="@+id/navigation_dashboard"
         android:title="Dashboard"
         android:icon="@drawable/ic_dashboard_selector"/>
+
     <item
         android:id="@+id/navigation_ranking"
         android:title="Ranking"
