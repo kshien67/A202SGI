@@ -1,102 +1,142 @@
 package recipe_saver.inti.myapplication;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-import recipe_saver.inti.myapplication.connector.RankingDAO;
-import recipe_saver.inti.myapplication.connector.VolleyCallback;
-import recipe_saver.inti.myapplication.util.ImageLoader;  // A utility class for loading images (e.g., using Picasso or Glide)
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import recipe_saver.inti.myapplication.connector.SupabaseConnector;
+import recipe_saver.inti.myapplication.connector.RecipeDAO;
+import recipe_saver.inti.myapplication.interfaces.Recipe;
 
 public class RankingFragment extends Fragment {
 
     private RecyclerView rankingRecyclerView;
-    private RankingDAO rankingDAO;
+    private RecipeAdapter recipeAdapter;
+    private List<Recipe> recipeList = new ArrayList<>();
+    private RecipeDAO recipeDAO;
+
+    public RankingFragment() {
+        // Required empty public constructor
+    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        recipeDAO = new RecipeDAO(SupabaseConnector.getInstance(getContext())); // Get instance of SupabaseConnector
+        loadRankedRecipes();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_ranking, container, false);
-
-        // Initialize components
-        rankingRecyclerView = view.findViewById(R.id.recycler_view_ranking);
+        rankingRecyclerView = view.findViewById(R.id.ranking_recycler_view);
         rankingRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        rankingDAO = new RankingDAO(getContext());
 
-        // Fetch top-ranked recipes
-        fetchRankedRecipes();
+        recipeAdapter = new RecipeAdapter(recipeList);
+        rankingRecyclerView.setAdapter(recipeAdapter);
 
         return view;
     }
 
-    private void fetchRankedRecipes() {
-        rankingDAO.getTopRankedRecipes(new VolleyCallback() {
-            @Override
-            public void onSuccess(JSONArray response) {
-                // Bind recipes to RecyclerView
-                RecipeAdapter adapter = new RecipeAdapter(response);
-                rankingRecyclerView.setAdapter(adapter);
-            }
+    private void loadRankedRecipes() {
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe?select=recipe_name,description,image&order=likes_count.desc"; // Example URL to fetch ranked recipes
 
-            @Override
-            public void onError(VolleyError error) {
-                Toast.makeText(getContext(), "Failed to load ranking", Toast.LENGTH_SHORT).show();
-            }
-        });
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                url,
+                response -> {
+                    try {
+                        for (int i = 0; i < response.length(); i++) {
+                            JSONObject recipeObject = response.getJSONObject(i);
+                            String base64Image = recipeObject.getString("image"); // Get Base64 image string
+                            byte[] imageBytes = Base64.decode(base64Image, Base64.DEFAULT);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+                            // Create Recipe object and set its values
+                            Recipe recipe = new Recipe();
+                            recipe.setImage(bitmap);
+                            recipe.setRecipeName(recipeObject.getString("recipe_name"));
+                            recipe.setDescription(recipeObject.getString("description"));
+
+                            // Add the recipe to the list
+                            recipeList.add(recipe);
+                        }
+                        recipeAdapter.notifyDataSetChanged(); // Update the adapter after data is added
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "Error fetching recipes", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> {
+                    error.printStackTrace();
+                    Toast.makeText(getContext(), "Error loading recipes", Toast.LENGTH_SHORT).show();
+                }
+        );
+
+        // Add the request to the request queue for Volley
+        SupabaseConnector.getInstance(getContext()).getRequestQueue().add(jsonArrayRequest);
     }
 
-    private class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
-        private JSONArray recipes;
+    private static class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
 
-        public RecipeAdapter(JSONArray recipes) {
+        private final List<Recipe> recipes;
+
+        public RecipeAdapter(List<Recipe> recipes) {
             this.recipes = recipes;
         }
 
         @Override
         public RecipeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_ranking, parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_ranking_card, parent, false);
             return new RecipeViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(RecipeViewHolder holder, int position) {
-            try {
-                JSONObject recipe = recipes.getJSONObject(position);
-                holder.recipeName.setText(recipe.getString("name"));
-                holder.recipeLikes.setText(String.valueOf(recipe.getInt("likes")));
-                holder.recipeDescription.setText(recipe.getString("description"));
-
-                // Load the image using a utility class (e.g., Picasso or Glide)
-                String imageUrl = recipe.getString("image_url");
-                ImageLoader.loadImage(holder.recipeImage, imageUrl);  // Use your image loading utility
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            Recipe recipe = recipes.get(position);
+            holder.recipeName.setText(recipe.getRecipeName());
+            holder.recipeDescription.setText(recipe.getDescription());
+            holder.recipeImage.setImageBitmap(recipe.getImage());
         }
 
         @Override
         public int getItemCount() {
-            return recipes.length();
+            return recipes.size();
         }
 
-        public class RecipeViewHolder extends RecyclerView.ViewHolder {
+        public static class RecipeViewHolder extends RecyclerView.ViewHolder {
+
+            TextView recipeName;
+            TextView recipeDescription;
             ImageView recipeImage;
-            TextView recipeName, recipeLikes, recipeDescription;
 
             public RecipeViewHolder(View itemView) {
                 super(itemView);
-                recipeImage = itemView.findViewById(R.id.recipe_image);
                 recipeName = itemView.findViewById(R.id.recipe_name);
-                recipeLikes = itemView.findViewById(R.id.recipe_likes);
                 recipeDescription = itemView.findViewById(R.id.recipe_description);
+                recipeImage = itemView.findViewById(R.id.recipe_image);
             }
         }
     }
