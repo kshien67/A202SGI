@@ -25,7 +25,7 @@ public class HomeActivity extends AppCompatActivity {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new DashboardFragment()).commit();
             } else if (id == R.id.navigation_ranking) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new RankingFragment()).commit();
-            } else if (id == R.id.navigation_add) {
+        } else if (id == R.id.navigation_add) {
                 // Replace with AddRecipeFragment instead of launching a new activity
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new AddRecipeFragment()).commit();
 
