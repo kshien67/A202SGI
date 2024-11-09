@@ -8,20 +8,20 @@
     <item
         android:id="@+id/navigation_ranking"
         android:title="Ranking"
-        android:icon="@drawable/ic_ranking" /> <!-- Uncomment and provide the correct icon here -->
+        android:icon="@drawable/ic_ranking" />
 
     <item
         android:id="@+id/navigation_add"
         android:title="Add Recipe"
-        android:icon="@drawable/ic_add_recipe" /> <!-- Add an icon if required -->
+        android:icon="@drawable/ic_add_recipe" />
 
     <item
         android:id="@+id/navigation_collection"
         android:title="Profile"
-        android:icon="@drawable/ic_collection" /> <!-- Add an icon if required -->
+        android:icon="@drawable/ic_collection" />
 
     <item
         android:id="@+id/navigation_settings"
         android:title="Settings"
-        android:icon="@drawable/ic_settings" /> <!-- Add an icon if required -->
+        android:icon="@drawable/ic_settings" />
 </menu>
