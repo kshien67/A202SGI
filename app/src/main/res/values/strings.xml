@@ -20,6 +20,7 @@
     <string name="difficulty">Difficulty</string>
     <string name="instructions">Instructions</string>
     <string name="save">SAVE</string>
+    <string name="collection_title">My Recipes</string>
 
     <!-- Arrays -->
     <string-array name="cuisine_array">
