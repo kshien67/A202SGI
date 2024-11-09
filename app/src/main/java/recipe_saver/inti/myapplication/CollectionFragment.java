@@ -17,6 +17,10 @@ import com.android.volley.VolleyError;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 import recipe_saver.inti.myapplication.connector.CollectionDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
@@ -62,6 +66,29 @@ public class CollectionFragment extends Fragment {
 
     private void populateCards(JSONArray recipes) {
         LayoutInflater inflater = LayoutInflater.from(getContext());
+        JSONArray test = new JSONArray(Arrays.asList(
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 1")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 2")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 3")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 4")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 5")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 6")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 7")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 8")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 9")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 10")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 11")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 12")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 13")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 14")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 15")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 16")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 17")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 18")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 19")),
+                        new JSONObject(Collections.singletonMap("recipe_name", "Test Recipe 20"))
+                )
+        );
         for (int i = 0; i < recipes.length(); i++) {
             try {
                 View cardView = inflater.inflate(R.layout.card_recipe, mGridLayout, false);
@@ -72,24 +99,34 @@ public class CollectionFragment extends Fragment {
                 title.setText(recipes.getJSONObject(i).getString("recipe_name"));
                 likes.setText(recipes.getJSONObject(i).getString("like_count"));
 
-                // Decode BYTEA string to byte array
-                String byteaString = recipes.getJSONObject(i).getString("image");
-                Log.d(TAG, "Image: " + byteaString);
-                byte[] imageBytes = android.util.Base64.decode(byteaString, android.util.Base64.DEFAULT);
+                String url = recipes.getJSONObject(i).getString("image");
+                mCollectionDAO.fetchRecipeImage(url, new CollectionDAO.ImageCallback() {
+                    @Override
+                    public void onSuccess(Bitmap bitmap) {
+                        image.setImageBitmap(bitmap);
+                    }
 
-                // Convert byte array to Bitmap
-                Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+                    @Override
+                    public void onError(VolleyError error) {
+                        Log.e(TAG, "Error: " + error.toString());
+                        if (error.networkResponse != null) {
+                            Log.e(TAG, "Status Code: " + error.networkResponse.statusCode);
+                            Log.e(TAG, "Response Data: " + new String(error.networkResponse.data));
+                        }
+                    }
+                });
 
-                // Set Bitmap to ImageView
-                image.setImageBitmap(bitmap);
-
+                //Log.d(TAG, "Added card: " + cardView.toString());
+                //Log.d(TAG, "Likes: " + likes.getText());
+                //Log.d(TAG, "Image: " + url);
                 mGridLayout.addView(cardView);
-            } catch (JSONException e) {
-                Log.e(TAG, "JSON error: " + e.getMessage());
+            } catch (Exception e) {
+                Log.d(TAG, e.getMessage());
             }
         }
 
         if (recipes.length() % 2 != 0) {
+            Log.d(TAG, "Adding empty view");
             View emptyView = new View(getContext());
             GridLayout.LayoutParams layoutParams = new GridLayout.LayoutParams();
             layoutParams.width = 0;

@@ -1,12 +1,17 @@
 package recipe_saver.inti.myapplication.connector;
 
+import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.android.volley.Request;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonArrayRequest;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -37,7 +42,13 @@ public class CollectionDAO {
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.POST, url, jsonBody,
-                callback::onSuccess,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray jsonArray) {
+                        Log.d(TAG, "Collected recipes: " + jsonArray.toString());
+                        callback.onSuccess(jsonArray);
+                    }
+                },
                 error -> {
                     Log.e(TAG, "Error: " + error.toString());
                     if (error.networkResponse != null) {
@@ -46,7 +57,7 @@ public class CollectionDAO {
                     }
                     callback.onError(error);
                 }
-                ) {
+        ) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
@@ -61,8 +72,29 @@ public class CollectionDAO {
         mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
     }
 
+    public void fetchRecipeImage(String url, ImageCallback callback) {
+        ImageRequest imageRequest = new ImageRequest(
+                url,
+                callback::onSuccess,
+                0,
+                0,
+                ImageView.ScaleType.CENTER_CROP,
+                Bitmap.Config.RGB_565,
+                callback::onError
+        );
+
+        mSupabaseConnector.getRequestQueue().add(imageRequest);
+    }
+
     public interface ArrayCallback {
         void onSuccess(JSONArray response);
+
+        void onError(VolleyError error);
+    }
+
+    public interface ImageCallback {
+        void onSuccess(Bitmap result);
+
         void onError(VolleyError error);
     }
 }
