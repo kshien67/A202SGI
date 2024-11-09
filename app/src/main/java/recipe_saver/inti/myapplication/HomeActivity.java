@@ -26,11 +26,9 @@ public class HomeActivity extends AppCompatActivity {
             } else if (id == R.id.navigation_ranking) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new RankingFragment()).commit();
             } else if (id == R.id.navigation_add) {
-                // Replace with AddRecipeFragment instead of launching a new activity
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new AddRecipeFragment()).commit();
-
             } else if (id == R.id.navigation_collection) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ProfileFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new CollectionFragment()).commit();
             } else if (id == R.id.navigation_settings) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SettingsFragment()).commit();
             }

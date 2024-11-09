@@ -46,7 +46,7 @@ public class RecipeDAO {
             jsonBody.put("time_taken", recipe.getTimeTaken());
             jsonBody.put("servings", recipe.getServings());
             jsonBody.put("difficulty", recipe.getDifficulty());
-            jsonBody.put("image", bitmapToBase64(recipe.getImage()));
+            jsonBody.put("instructions", recipe.getInstructions());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -65,6 +65,18 @@ public class RecipeDAO {
                             JSONObject firstObject = response.getJSONObject(0);
                             int recipeIdResponse = firstObject.getInt("recipe_id");
                             Log.d(TAG, "Recipe added successfully" + recipeIdResponse);
+
+                            uploadRecipeImage(String.valueOf(recipeIdResponse), recipe.getImage(), new SupabaseConnector.VolleyCallback() {
+                                @Override
+                                public void onSuccess(JSONObject response) {
+                                    Log.d(TAG, "Image uploaded successfully");
+                                }
+
+                                @Override
+                                public void onError(VolleyError error) {
+                                    Log.e(TAG, "Failed to upload image: " + error.getMessage());
+                                }
+                            });
 
                             upsertRecipeIngredients(recipeIdResponse, ingredients, new FetchCallback() {
                                 @Override
@@ -185,11 +197,32 @@ public class RecipeDAO {
         void onError(VolleyError error);
     }
 
-    private String bitmapToBase64(Bitmap bitmap) {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-        byte[] byteArray = stream.toByteArray();
-        return android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT);
+    private void uploadRecipeImage(String recipeID, Bitmap image, SupabaseConnector.VolleyCallback callback) {
+        String url = SupabaseConnector.SUPABASE_URL + "/storage/v1/object/recipe/" + recipeID + ".png";
+
+        // Convert Bitmap to byte array
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, null,
+                callback::onSuccess, callback::onError) {
+            @Override
+            public byte[] getBody() {
+                return byteArray;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
+                headers.put("Content-Type", "image/jpeg");
+                return headers;
+            }
+        };
+
+        mSupabaseConnector.getRequestQueue().add(jsonObjectRequest);
     }
 }
 
