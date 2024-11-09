@@ -161,15 +161,17 @@ public class LoginDAO extends SupabaseConnector {
                 },
                 error -> Log.e(TAG, "Error fetching user ID: " + error.getMessage())
         ) {
-           @Override
+            @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", SUPABASE_KEY);
                 headers.put("Authorization", "Bearer " + accessToken);
-                
-        }
+                return headers;
+            }
+        };
+
         getRequestQueue().add(jsonArrayRequest);
-      }
+    }
 
     public void resetPassword(String accessToken, String newPassword, final VolleyCallback callback) {
         String url = SUPABASE_URL + "/auth/v1/user";
