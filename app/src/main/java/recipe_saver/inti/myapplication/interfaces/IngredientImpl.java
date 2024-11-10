@@ -9,8 +9,6 @@ public class IngredientImpl {
     private final String ingredient_name;
     private final String category;
 
-
-
     public IngredientImpl(String ingredient_name, String category) {
         this.ingredient_id = "";
         this.ingredient_name = ingredient_name;
@@ -25,11 +23,11 @@ public class IngredientImpl {
         return ingredient_name;
     }
 
-    public String getCategory() {
-        return category;
-    }
+
 
     // Function to parse ingredients and convert units between metric and imperial
+    // This method is retained for potential future use or extension
+    /* This method is retained for potential future use or extension */
     public void parseIngredients(String instructions, String type) {
         // Regular expression to identify ingredient format [[amount|unit|ingredient]]
         Pattern pattern = Pattern.compile("\\[\\[(\\d+)\\|(\\w+)\\|(\\w+)]]");
@@ -44,6 +42,9 @@ public class IngredientImpl {
 
             // Extract the matched parts
             String amountStr = matcher.group(1);
+            if (amountStr == null) {
+                continue;
+            }
             String unit = matcher.group(2);
             String ingredient = matcher.group(3);
 
@@ -51,22 +52,22 @@ public class IngredientImpl {
             double amount = Double.parseDouble(amountStr);
 
             // Conversion logic
-            if (Objects.nonNull(type) && type.equalsIgnoreCase("metric")) {
-                if (Objects.nonNull(unit) && unit.equalsIgnoreCase("tbsp")) {
+            if (type != null && type.equalsIgnoreCase("metric")) {
+                if (unit != null && unit.equalsIgnoreCase("tbsp")) {
                     amount = Math.round(amount * 14.7868); // Convert tablespoon to ml and round up
                     unit = "ml";
-                } else if (unit.equalsIgnoreCase("cup")) {
+                } else if (unit != null && unit.equalsIgnoreCase("cup")) {
                     amount = Math.round(amount * 240); // Convert cup to ml and round up
                     unit = "ml";
-                } else if (unit.equalsIgnoreCase("oz")) {
+                } else if (unit != null && unit.equalsIgnoreCase("oz")) {
                     amount = Math.round(amount * 28.3495); // Convert ounce to grams and round up
                     unit = "g";
-                } else if (unit.equalsIgnoreCase("lb")) {
+                } else if (unit != null && unit.equalsIgnoreCase("lb")) {
                     amount = Math.round(amount * 453.592); // Convert pound to grams and round up
                     unit = "g";
                 }
-            } else if (Objects.nonNull(type) && type.equalsIgnoreCase("imperial")) {
-                if (Objects.nonNull(unit) && unit.equalsIgnoreCase("ml")) {
+            } else if (type != null && type.equalsIgnoreCase("imperial")) {
+                if (unit != null && unit.equalsIgnoreCase("ml")) {
                     if (amount >= 240) {
                         amount = Math.round(amount / 240); // Convert ml to cup if amount is larger than 240 ml and round up
                         unit = "cup";
@@ -74,7 +75,7 @@ public class IngredientImpl {
                         amount = Math.round(amount / 14.7868); // Convert ml to tablespoon and round up
                         unit = "tbsp";
                     }
-                } else if (unit.equalsIgnoreCase("g")) {
+                } else if (unit != null && unit.equalsIgnoreCase("g")) {
                     if (amount >= 453.592) {
                         amount = Math.round(amount / 453.592); // Convert grams to pounds if amount is larger than 453.592 g and round up
                         unit = "lb";
@@ -96,5 +97,51 @@ public class IngredientImpl {
 
         // Print or use the parsed instructions
         System.out.println(parsedInstructions);
+    }
+
+    // Function to convert ingredients to grams, ml, or pieces, multiply by the second value, and return the sum
+    public String calculateTotal(String[][] ingredients) {
+        double totalGrams = 0;
+        double totalMl = 0;
+        double totalPcs = 0;
+
+        for (String[] ingredient : ingredients) {
+            String amountStr = ingredient[0];
+            double multiplier = Double.parseDouble(ingredient[1]);
+            double amount;
+
+            if (amountStr.contains("pcs")) {
+                String[] parts = amountStr.split(" ");
+                int pcs = Integer.parseInt(parts[0]);
+                amount = pcs * 50; // Assuming each piece is 50 grams
+                totalPcs += amount * multiplier;
+            } else if (amountStr.contains("g")) {
+                String[] parts = amountStr.split(" ");
+                amount = Double.parseDouble(parts[0]);
+                totalGrams += amount * multiplier;
+            } else if (amountStr.contains("ml")) {
+                String[] parts = amountStr.split(" ");
+                amount = Double.parseDouble(parts[0]);
+                totalMl += amount * multiplier;
+            } else if (amountStr.contains("cup")) {
+                String[] parts = amountStr.split(" ");
+                amount = Double.parseDouble(parts[0]) * 240; // Convert cup to ml
+                totalMl += amount * multiplier;
+            } else if (amountStr.contains("tbsp")) {
+                String[] parts = amountStr.split(" ");
+                amount = Double.parseDouble(parts[0]) * 14.7868; // Convert tablespoon to ml
+                totalMl += amount * multiplier;
+            } else if (amountStr.contains("oz")) {
+                String[] parts = amountStr.split(" ");
+                amount = Double.parseDouble(parts[0]) * 28.3495; // Convert ounce to grams
+                totalGrams += amount * multiplier;
+            } else if (amountStr.contains("lb")) {
+                String[] parts = amountStr.split(" ");
+                amount = Double.parseDouble(parts[0]) * 453.592; // Convert pound to grams
+                totalGrams += amount * multiplier;
+            }
+        }
+
+        return "Total: " + totalGrams + " g, " + totalMl + " ml, " + totalPcs + " pcs";
     }
 }
