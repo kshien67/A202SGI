@@ -23,12 +23,8 @@ public class IngredientImpl {
         return ingredient_name;
     }
 
-
-
     // Function to parse ingredients and convert units between metric and imperial
-    // This method is retained for potential future use or extension
-    /* This method is retained for potential future use or extension */
-    public void parseIngredients(String instructions, String type) {
+    public String parseIngredients(String instructions, String type) {
         // Regular expression to identify ingredient format [[amount|unit|ingredient]]
         Pattern pattern = Pattern.compile("\\[\\[(\\d+)\\|(\\w+)\\|(\\w+)]]");
         Matcher matcher = pattern.matcher(instructions);
@@ -51,43 +47,40 @@ public class IngredientImpl {
             // Convert amount to double for calculation
             double amount = Double.parseDouble(amountStr);
 
-            // Conversion logic
-            if (type != null && type.equalsIgnoreCase("metric")) {
-                if (unit != null && unit.equalsIgnoreCase("tbsp")) {
-                    amount = Math.round(amount * 14.7868); // Convert tablespoon to ml and round up
-                    unit = "ml";
-                } else if (unit != null && unit.equalsIgnoreCase("cup")) {
-                    amount = Math.round(amount * 240); // Convert cup to ml and round up
-                    unit = "ml";
-                } else if (unit != null && unit.equalsIgnoreCase("oz")) {
-                    amount = Math.round(amount * 28.3495); // Convert ounce to grams and round up
-                    unit = "g";
-                } else if (unit != null && unit.equalsIgnoreCase("lb")) {
-                    amount = Math.round(amount * 453.592); // Convert pound to grams and round up
-                    unit = "g";
-                }
-            } else if (type != null && type.equalsIgnoreCase("imperial")) {
-                if (unit != null && unit.equalsIgnoreCase("ml")) {
-                    if (amount >= 240) {
-                        amount = Math.round(amount / 240); // Convert ml to cup if amount is larger than 240 ml and round up
-                        unit = "cup";
-                    } else {
-                        amount = Math.round(amount / 14.7868); // Convert ml to tablespoon and round up
-                        unit = "tbsp";
-                    }
-                } else if (unit != null && unit.equalsIgnoreCase("g")) {
-                    if (amount >= 453.592) {
-                        amount = Math.round(amount / 453.592); // Convert grams to pounds if amount is larger than 453.592 g and round up
-                        unit = "lb";
-                    } else {
-                        amount = Math.round(amount / 28.3495); // Convert grams to ounces and round up
-                        unit = "oz";
-                    }
+            String normalFormat = "";
+
+            // Conversion logic for outputting normal format
+            if (unit != null) {
+                switch (unit.toLowerCase()) {
+                    case "tbsp":
+                        normalFormat = amount + " tablespoons of " + ingredient + " (" + Math.round(amount * 15) + " grams)";
+                        break;
+                    case "cup":
+                        normalFormat = amount + " cups of " + ingredient + " (" + Math.round(amount * 240) + " ml)";
+                        break;
+                    case "oz":
+                        normalFormat = amount + " ounces of " + ingredient + " (" + Math.round(amount * 28.3495) + " grams)";
+                        break;
+                    case "lb":
+                        normalFormat = amount + " pounds of " + ingredient + " (" + Math.round(amount * 453.592) + " grams)";
+                        break;
+                    case "ml":
+                        normalFormat = amount + " milliliters of " + ingredient;
+                        break;
+                    case "g":
+                        normalFormat = amount + " grams of " + ingredient;
+                        break;
+                    case "pcs":
+                        normalFormat = amount + " pieces of " + ingredient;
+                        break;
+                    default:
+                        normalFormat = amount + " " + unit + " of " + ingredient;
+                        break;
                 }
             }
 
-            // Append the converted ingredient
-            parsedInstructions.append("[[").append(amount).append("|").append(unit).append("|").append(ingredient).append("]]");
+            // Append the converted ingredient in the desired format
+            parsedInstructions.append(normalFormat);
 
             lastMatchEnd = matcher.end();
         }
@@ -95,53 +88,13 @@ public class IngredientImpl {
         // Append remaining text after the last match
         parsedInstructions.append(instructions.substring(lastMatchEnd));
 
-        // Print or use the parsed instructions
-        System.out.println(parsedInstructions);
+        // Return the parsed instructions
+        return parsedInstructions.toString();
     }
 
-    // Function to convert ingredients to grams, ml, or pieces, multiply by the second value, and return the sum
-    public String calculateTotal(String[][] ingredients) {
-        double totalGrams = 0;
-        double totalMl = 0;
-        double totalPcs = 0;
-
-        for (String[] ingredient : ingredients) {
-            String amountStr = ingredient[0];
-            double multiplier = Double.parseDouble(ingredient[1]);
-            double amount;
-
-            if (amountStr.contains("pcs")) {
-                String[] parts = amountStr.split(" ");
-                int pcs = Integer.parseInt(parts[0]);
-                amount = pcs * 50; // Assuming each piece is 50 grams
-                totalPcs += amount * multiplier;
-            } else if (amountStr.contains("g")) {
-                String[] parts = amountStr.split(" ");
-                amount = Double.parseDouble(parts[0]);
-                totalGrams += amount * multiplier;
-            } else if (amountStr.contains("ml")) {
-                String[] parts = amountStr.split(" ");
-                amount = Double.parseDouble(parts[0]);
-                totalMl += amount * multiplier;
-            } else if (amountStr.contains("cup")) {
-                String[] parts = amountStr.split(" ");
-                amount = Double.parseDouble(parts[0]) * 240; // Convert cup to ml
-                totalMl += amount * multiplier;
-            } else if (amountStr.contains("tbsp")) {
-                String[] parts = amountStr.split(" ");
-                amount = Double.parseDouble(parts[0]) * 14.7868; // Convert tablespoon to ml
-                totalMl += amount * multiplier;
-            } else if (amountStr.contains("oz")) {
-                String[] parts = amountStr.split(" ");
-                amount = Double.parseDouble(parts[0]) * 28.3495; // Convert ounce to grams
-                totalGrams += amount * multiplier;
-            } else if (amountStr.contains("lb")) {
-                String[] parts = amountStr.split(" ");
-                amount = Double.parseDouble(parts[0]) * 453.592; // Convert pound to grams
-                totalGrams += amount * multiplier;
-            }
-        }
-
-        return "Total: " + totalGrams + " g, " + totalMl + " ml, " + totalPcs + " pcs";
+    public static void main(String[] args) {
+        IngredientImpl ingredient = new IngredientImpl("Butter", "Dairy");
+        String parsed = ingredient.parseIngredients("1. You'll need [[2|tbsp|Butter]]. Add one tablespoon in a large skillet, and scramble [[2|pcs|Egg]] in the skillet.\n2. Remove the eggs, and add the other tablespoon of butter. Add [[1|pcs|Carrot]] and [[1|pcs|Onion]] into the skillet and cook for 4 minutes.\n3. Add [[1|cup|Rice]] and saute for 4 minutes.\n4. Add the scrambled eggs back, and stir in [[20|ml|Soybean Oil]] and [[15|ml|Olive Oil]] for 2 minutes.", "metric");
+        System.out.println(parsed);
     }
 }
