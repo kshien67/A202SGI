@@ -18,20 +18,23 @@ import com.google.android.material.imageview.ShapeableImageView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import recipe_saver.inti.myapplication.connector.RecipeDAO;
 import recipe_saver.inti.myapplication.connector.SupabaseConnector;
+import recipe_saver.inti.myapplication.interfaces.IngredientImpl;
 
 public class RecipeFragment extends Fragment {
     private static final String TAG = "RecipeFragment";
     private RecipeDAO mRecipeDAO;
     private String recipeID;
+    private String type = "Metric";
+    private String mInstructions;
 
     private ImageButton mBackButton;
     private ShapeableImageView mShareButton;
     private ShapeableImageView mCollectButton;
     private ShapeableImageView mLikeButton;
+    private ImageButton mConvertButton;
     private ImageView mRecipeImage;
     private TextView mRecipeTitle;
     private TextView mCuisineType;
@@ -72,6 +75,7 @@ public class RecipeFragment extends Fragment {
         mRecipeDifficulty = v.findViewById(R.id.recipe_difficulty_text);
         mRecipeIngredients = v.findViewById(R.id.ingredients_text);
         mRecipeInstructions = v.findViewById(R.id.instructions_text);
+        mConvertButton = v.findViewById(R.id.convert_button);
 
 
         mBackButton.setOnClickListener(view -> {
@@ -127,13 +131,16 @@ public class RecipeFragment extends Fragment {
             public void onSuccess(JSONArray result) {
                 JSONObject recipe = result.optJSONObject(0);
                 try {
+                    mInstructions = recipe.getString("instructions");
+
                     mRecipeTitle.setText(recipe.getString("recipe_name"));
                     mRecipeDescription.setText(recipe.getString("description"));
                     mCuisineType.setText(recipe.getString("cuisine"));
-                    mRecipeDescription.setText(recipe.getString("description"));
                     mRecipePrepTime.setText(recipe.getString("time_taken"));
                     mRecipeServings.setText(recipe.getString("servings"));
-                    mRecipeInstructions.setText(recipe.getString("instructions"));
+                    Log.d(TAG, "Calories: " + recipe.getJSONArray("quantity_calorie_pair").toString());
+                    mRecipeCalories.setText(IngredientImpl.parseCalories(recipe.getJSONArray("quantity_calorie_pair")));
+                    mRecipeInstructions.setText(IngredientImpl.parseIngredients(mInstructions, "Metric"));
 
                     mRecipeDAO.fetchRecipeImage(recipe.getString("image"), new RecipeDAO.ImageCallback() {
                         @Override
@@ -163,6 +170,19 @@ public class RecipeFragment extends Fragment {
                         difficulty = difficulty.substring(0, 1).toUpperCase() + difficulty.substring(1).toLowerCase();
                     }
                     mRecipeDifficulty.setText(difficulty);
+
+                    mConvertButton.setOnClickListener(view -> {
+                        if (type.equals("Metric")) {
+                            mRecipeInstructions.setText(IngredientImpl.parseIngredients(mInstructions, "Imperial"));
+                            type = "Imperial";
+
+                        } else {
+                            mRecipeInstructions.setText(IngredientImpl.parseIngredients(mInstructions, "Metric"));
+                            type = "Metric";
+                        }
+
+                        Toast.makeText(getContext(), "The units have been successfully converted to " + type + ".", Toast.LENGTH_SHORT).show();
+                    });
                 } catch (Exception e) {
                     Log.e(TAG, "Error: " + e.toString());
                 }
