@@ -139,8 +139,14 @@ public class RecipeFragment extends Fragment {
                     mRecipePrepTime.setText(recipe.getString("time_taken"));
                     mRecipeServings.setText(recipe.getString("servings"));
                     Log.d(TAG, "Calories: " + recipe.getJSONArray("quantity_calorie_pair").toString());
-                    mRecipeCalories.setText(IngredientImpl.parseCalories(recipe.getJSONArray("quantity_calorie_pair")));
-                    mRecipeInstructions.setText(IngredientImpl.parseIngredients(mInstructions, "Metric"));
+                    if (recipe.getJSONArray("quantity_calorie_pair").length() == 0) {
+                        mRecipeCalories.setText("N/A");
+                    } else {
+                        mRecipeCalories.setText(IngredientImpl.parseCalories(recipe.getJSONArray("quantity_calorie_pair")));
+                    }
+                    if (mInstructions != null) {
+                        mRecipeInstructions.setText(IngredientImpl.parseIngredients(mInstructions, "Metric"));
+                    }
 
                     mRecipeDAO.fetchRecipeImage(recipe.getString("image"), new RecipeDAO.ImageCallback() {
                         @Override
