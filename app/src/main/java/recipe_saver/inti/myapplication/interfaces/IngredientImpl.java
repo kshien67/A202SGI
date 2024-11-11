@@ -9,6 +9,12 @@ public class IngredientImpl {
     private final String ingredient_name;
     private final String category;
 
+    public IngredientImpl(String ingredient_id, String ingredient_name, String category) {
+        this.ingredient_id = ingredient_id;
+        this.ingredient_name = ingredient_name;
+        this.category = category;
+    }
+
     public IngredientImpl(String ingredient_name, String category) {
         this.ingredient_id = "";
         this.ingredient_name = ingredient_name;
@@ -23,8 +29,12 @@ public class IngredientImpl {
         return ingredient_name;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
     // Function to parse ingredients and convert units between metric and imperial
-    public String parseIngredients(String instructions, String type) {
+    public static String parseIngredients(String instructions, String type) {
         // Regular expression to identify ingredient format [[amount|unit|ingredient]]
         Pattern pattern = Pattern.compile("\\[\\[(\\d+)\\|(\\w+)\\|(\\w+)]]");
         Matcher matcher = pattern.matcher(instructions);
@@ -92,9 +102,11 @@ public class IngredientImpl {
         return parsedInstructions.toString();
     }
 
+    /*
     public static void main(String[] args) {
         IngredientImpl ingredient = new IngredientImpl("Butter", "Dairy");
         String parsed = ingredient.parseIngredients("1. You'll need [[2|tbsp|Butter]]. Add one tablespoon in a large skillet, and scramble [[2|pcs|Egg]] in the skillet.\n2. Remove the eggs, and add the other tablespoon of butter. Add [[1|pcs|Carrot]] and [[1|pcs|Onion]] into the skillet and cook for 4 minutes.\n3. Add [[1|cup|Rice]] and saute for 4 minutes.\n4. Add the scrambled eggs back, and stir in [[20|ml|Soybean Oil]] and [[15|ml|Olive Oil]] for 2 minutes.", "metric");
         System.out.println(parsed);
     }
+    */
 }
