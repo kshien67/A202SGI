@@ -31,7 +31,7 @@ public class RecipeFragment extends Fragment {
     private String mInstructions;
 
     private ImageButton mBackButton;
-    private ShapeableImageView mShareButton;
+    private ShapeableImageView mDeleteButton;
     private ShapeableImageView mCollectButton;
     private ShapeableImageView mLikeButton;
     private ImageButton mConvertButton;
@@ -62,7 +62,7 @@ public class RecipeFragment extends Fragment {
         mRecipeDAO = new RecipeDAO((SupabaseConnector.getInstance(getContext())));
 
         mBackButton = v.findViewById(R.id.back_button);
-        mShareButton = v.findViewById(R.id.share_button);
+        mDeleteButton = v.findViewById(R.id.share_button);
         mCollectButton = v.findViewById(R.id.collect_button);
         mLikeButton = v.findViewById(R.id.like_button);
         mRecipeImage = v.findViewById(R.id.recipe_image);
@@ -80,6 +80,37 @@ public class RecipeFragment extends Fragment {
 
         mBackButton.setOnClickListener(view -> {
             getParentFragmentManager().popBackStack();
+        });
+
+        mDeleteButton.setOnClickListener(view -> {
+
+            mRecipeDAO.checkUser(Integer.parseInt(recipeID), new RecipeDAO.BooleanCallback() {
+                @Override
+                public void onSuccess(Boolean result) {
+                    mRecipeDAO.deleteRecipe(Integer.parseInt(recipeID), new RecipeDAO.FetchCallback() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(getContext(), "Recipe Deleted!", Toast.LENGTH_SHORT).show();
+                            getParentFragmentManager().popBackStack();
+                        }
+
+                        @Override
+                        public void onError(VolleyError error) {
+                            Log.e(TAG, "Error: " + error.toString());
+                            if (error.networkResponse != null) {
+                                Log.e(TAG, "Status Code: " + error.networkResponse.statusCode);
+                                Log.e(TAG, "Response Data: " + new String(error.networkResponse.data));
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(VolleyError error) {
+                    Toast.makeText(getContext(), "User did not create this recipe.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
         });
 
         mLikeButton.setOnClickListener(view -> {

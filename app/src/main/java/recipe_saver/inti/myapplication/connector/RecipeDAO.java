@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+import recipe_saver.inti.myapplication.SignUpActivity;
 import recipe_saver.inti.myapplication.interfaces.Ingredient;
 import recipe_saver.inti.myapplication.interfaces.IngredientImpl;
 import recipe_saver.inti.myapplication.interfaces.Recipe;
@@ -112,6 +113,70 @@ public class RecipeDAO {
 
         mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
     }
+
+    public void checkUser(int recipeID, BooleanCallback callback) {
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe?select=user_id&recipe_id=eq." + recipeID;
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    try {
+                        JSONObject firstObject = response.getJSONObject(0);
+                        int userID = firstObject.getInt("user_id");
+                        if (userID == Integer.parseInt(SupabaseConnector.userID)) {
+                            callback.onSuccess(true);
+                        } else {
+                            callback.onSuccess(false);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        callback.onError(new VolleyError("Failed to check user"));
+                    }
+                },
+                error -> {
+                    // Handle error
+                    System.err.println("Failed to check user: " + error.getMessage());
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        mSupabaseConnector.getRequestQueue().add(jsonArrayRequest);
+    }
+
+    public void deleteRecipe(int recipeID, FetchCallback callback) {
+        String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/recipe?recipe_id=eq." + recipeID;
+
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.DELETE,
+                url,
+                response -> {
+                    Log.d(TAG, "Recipe deleted");
+                    callback.onSuccess();
+                },
+                callback::onError
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", SupabaseConnector.SUPABASE_KEY);
+                headers.put("Authorization", "Bearer " + SupabaseConnector.accessToken);
+                return headers;
+            }
+        };
+
+        mSupabaseConnector.getRequestQueue().add(stringRequest);
+    }
+
 
     public void fetchRecipeDetails(int recipeID, ArrayCallback callback) {
         String url = SupabaseConnector.SUPABASE_URL + "/rest/v1/rpc/get_recipe_details";
